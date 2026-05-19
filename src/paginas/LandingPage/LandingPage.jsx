@@ -1,6 +1,9 @@
 import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import logoPlataforma from '../../ativos/imagens/logo-plataforma.png'
 import oportunidadesImg from '../../ativos/imagens/oportunidades-ia.webp'
+import phpBadge from '../../ativos/imagens/php-badge.svg'
+import reactBadge from '../../ativos/imagens/react-badge.svg'
 
 export function LandingPage() {
   return (
@@ -31,7 +34,7 @@ export function LandingPage() {
         <aside className="landing-video-card" aria-label="Prévia de curso na plataforma">
           <div className="landing-video-copy">
             <span>Prévia da experiência</span>
-            <strong>Assista aulas dentro da RiseUp</strong>
+            <strong>Assista aulas dentro da plataforma</strong>
             <p>Prévia de entrevista para programadores: veja os primeiros 40 segundos e continue pela plataforma.</p>
           </div>
           <div className="landing-video-frame">
@@ -43,6 +46,25 @@ export function LandingPage() {
             />
           </div>
         </aside>
+      </section>
+
+      <section className="stats-bar">
+        <article>
+          <strong>28+</strong>
+          <span>cursos e trilhas</span>
+        </article>
+        <article>
+          <strong>12 sem.</strong>
+          <span>plano de estudo sugerido</span>
+        </article>
+        <article>
+          <strong>100%</strong>
+          <span>jornada guiada</span>
+        </article>
+        <article>
+          <strong>1</strong>
+          <span>perfil para estudar e se candidatar</span>
+        </article>
       </section>
 
       <section className="landing-opportunity-band">
@@ -59,6 +81,49 @@ export function LandingPage() {
             Descubra vagas ideais, acompanhe suas candidaturas e avance na sua carreira com mais clareza, confiança e
             praticidade.
           </p>
+        </div>
+      </section>
+
+      <section className="landing-exemplar">
+        <h2>Uma plataforma construída para quem está começando
+</h2>
+        <p>Tecnologia moderna e trilhas ideiais para você — tudo em um só lugar.</p>
+        <div className="landing-screen-mock" aria-label="prévia em wireframe da plataforma">
+          <div className="mock-window-bar">
+            <span />
+            <span />
+            <span />
+          </div>
+          <div className="mock-content">
+            <div className="mock-sidebar">
+              <span className="mock-menu-item active" />
+              <span className="mock-menu-item" />
+              <span className="mock-menu-item" />
+              <span className="mock-menu-item" />
+            </div>
+            <div className="mock-main">
+              <article className="mock-course-card">
+                <img src={phpBadge} alt="PHP" />
+                <div className="mock-text-lines">
+                  <span className="mock-line title" />
+                  <span className="mock-line short" />
+                  <span className="mock-progress">
+                    <span style={{ width: '62%' }} />
+                  </span>
+                </div>
+              </article>
+              <article className="mock-course-card">
+                <img src={reactBadge} alt="React" />
+                <div className="mock-text-lines">
+                  <span className="mock-line title" />
+                  <span className="mock-line medium" />
+                  <span className="mock-progress">
+                    <span style={{ width: '38%' }} />
+                  </span>
+                </div>
+              </article>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -96,6 +161,43 @@ export function LandingPage() {
           <h3>Para empresas parceiras</h3>
           <p>Perfis com histórico de estudo, candidaturas e indicadores de formação.</p>
         </article>
+      </section>
+
+      <section className="landing-about">
+        <div>
+          <h2>Quem somos</h2>
+          <p>
+            ----  nasceu para reduzir as barreiras de entrada em TI. Unimos aprendizado estruturado, prática real e conexão com empresas numa plataforma que acompanha cada etapa da sua jornada.
+          </p>
+          <p>Aqui você encontra direcionamento certo, qualquer pessoa pode fazer a transição para a tecnologia.
+
+</p>
+        </div>
+        <div className="landing-about-stats">
+          <article>
+            <strong>28h</strong>
+            <span>tempo médio de estudo semanal
+
+            </span>
+          </article>
+          <article>
+            <strong>4.8★</strong>
+            <span>avaliação dos alunos</span>
+          </article>
+          <article>
+            <strong>80%</strong>
+            <span>piso de certificado</span>
+          </article>
+          <article>
+            <strong>0</strong>
+            <span>alunos sem suporte</span>
+          </article>
+        </div>
+      </section>
+
+      <section className="landing-platform-mark">
+        <img src={logoPlataforma} alt="Logo da plataforma" />
+        <p>Acreditamos em aprendizado simples, prático e com propósito real.</p>
       </section>
 
       <section className="landing-section-udemy cta-udemy">
