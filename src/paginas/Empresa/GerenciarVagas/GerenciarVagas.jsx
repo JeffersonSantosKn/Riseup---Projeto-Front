@@ -108,6 +108,9 @@ export function GerenciarVagas() {
               <UsersRound size={22} />
               <span>Número de candidato:</span>
               <strong>{vaga.candidatos || 0}</strong>
+              <Link className="mini-acao-azul" to={`/empresa/vagas/${vaga.id}/candidatos`}>
+                Visualizar candidatos
+              </Link>
             </div>
             <div className="empresa-vaga-meta">
               <span>Data publicação: {vaga.publicadaEm}</span>
