@@ -5,7 +5,7 @@ import { Avatar } from '../../../componentes/perfis/Avatar'
 import { useApp } from '../../../contextos/AppContext'
 import { cursos } from '../../../dados/cursos'
 import { trilhas } from '../../../dados/trilhas'
-import { baixarCertificadoPdf } from '../../../servicos/certificados'
+import { baixarCertificadoJpeg, baixarCertificadoPdf, criarIdCertificado } from '../../../servicos/certificados'
 import { cursoComoConteudo } from '../../../servicos/conteudosCurso'
 import { calcularProgresso } from '../../../servicos/recomendacoes'
 
@@ -336,11 +336,28 @@ export function PerfilAluno() {
                     <span>Professor: {certificado.professor}</span>
                     <span>Carga horária: {certificado.duracao}</span>
                     <span>Conclusão: {certificado.progresso}%</span>
+                    <span className="certificado-identificador">
+                      ID do certificado: {criarIdCertificado({ aluno: usuarioAtual?.nome, curso: certificado.titulo })}
+                    </span>
                     <p>Certificado simulado para projeto acadêmico, sem valor real ou oficial.</p>
                     <div className="certificado-acoes">
                       <Link className="botao botao-secondary" to={`/aluno/cursos/${certificado.id}`}>
                         <ExternalLink size={17} /> Ir para o curso
                       </Link>
+                      <button
+                        className="botao botao-secondary"
+                        type="button"
+                        onClick={() =>
+                          baixarCertificadoJpeg({
+                            aluno: usuarioAtual?.nome,
+                            curso: certificado.titulo,
+                            professor: certificado.professor,
+                            horas: certificado.duracao,
+                          })
+                        }
+                      >
+                        <Download size={17} /> Baixar JPEG
+                      </button>
                       <button
                         className="botao botao-primary"
                         type="button"

@@ -1077,6 +1077,15 @@
   font-weight: 800;
 }
 
+.certificado-identificador {
+  display: inline-block;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(17, 24, 39, 0.05);
+  color: #44506f;
+  font-size: 13px;
+}
+
 .certificado-acoes {
   display: flex;
   flex-wrap: wrap;
