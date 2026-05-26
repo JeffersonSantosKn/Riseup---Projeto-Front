@@ -3,7 +3,6 @@ import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Avatar } from '../../../componentes/perfis/Avatar'
 import { useApp } from '../../../contextos/AppContext'
-const sla = []
 import { cursos } from '../../../dados/cursos'
 import { trilhas } from '../../../dados/trilhas'
 import { baixarCertificadoPdf } from '../../../servicos/certificados'
@@ -122,6 +121,7 @@ export function PerfilAluno() {
   ]
 
   const tecnologiasEstudadas = calcularTecnologiasEstudadas(progressoCursos)
+  const candidaturasDoAluno = candidaturas.filter((candidatura) => candidatura.alunoId === usuarioAtual?.id)
 
   function iniciarDrag(e, ref) {
     if (!ref.current) return
@@ -372,7 +372,7 @@ export function PerfilAluno() {
               </article>
               <article>
                 <BriefcaseBusiness size={20} />
-                <strong>{candidaturas.length}</strong>
+                <strong>{candidaturasDoAluno.length}</strong>
                 <span>Candidaturas</span>
               </article>
             </div>
@@ -489,12 +489,12 @@ export function PerfilAluno() {
           {/* ── Candidaturas ── */}
           <section className="perfil-udemy-form" id="candidaturas">
             <h2>Candidaturas</h2>
-            {candidaturas.length ? (
-              sla.map((candidatura) => {
+            {candidaturasDoAluno.length ? (
+              candidaturasDoAluno.map((candidatura) => {
                 const vaga = vagasEmpresa.find((v) => v.id === candidatura.vagaId)
                 return (
                   <div className="candidatura-item" key={candidatura.id}>
-                    <strong>{vaga?.titulo}</strong>
+                    <strong>{vaga?.titulo || 'Vaga removida'}</strong>
                     <span className="candidatura-status">{candidatura.status}</span>
                     <small>Última atualização: {candidatura.atualizadoEm}</small>
                   </div>

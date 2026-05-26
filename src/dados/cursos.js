@@ -2206,6 +2206,25 @@ const cursosBase = [
     ['go-backend'],
     'Aprenda sintaxe, funcoes, structs e pacotes para iniciar em Go.',
     'Entrada direta para quem tem interesse em Go.',
+    {
+      modulos: [
+        {
+          id: 'curso-go-basico-modulo',
+          titulo: 'Modulo 1: Go essencial',
+          descricao: 'Base de linguagem para iniciar em Go.',
+          aulas: [
+            aulaCurso(
+              'curso-go-basico-aula-1',
+              'Go essencial para back-end',
+              '4h',
+              'https://www.youtube.com/embed/8uiZC0l4Ajw',
+              'Sintaxe, funcoes, structs, pacotes e primeiros passos com Go.',
+              'Prof. Henrique Costa',
+            ),
+          ],
+        },
+      ],
+    },
   ),
   curso(
     'curso-go-api',
@@ -2219,6 +2238,25 @@ const cursosBase = [
     ['go-backend', 'sql-banco-dados'],
     'Crie handlers HTTP, trabalhe com JSON e organize um projeto de API.',
     'Para quem ja fez projetos e quer aprofundar back-end.',
+    {
+      modulos: [
+        {
+          id: 'curso-go-api-modulo',
+          titulo: 'Modulo 1: APIs com Go',
+          descricao: 'HTTP, handlers, JSON e projeto pratico.',
+          aulas: [
+            aulaCurso(
+              'curso-go-api-aula-1',
+              'APIs intermediarias com Go',
+              '5h',
+              'https://www.youtube.com/embed/8uiZC0l4Ajw',
+              'Handlers HTTP, JSON e organizacao de um projeto de API.',
+              'Prof. Henrique Costa',
+            ),
+          ],
+        },
+      ],
+    },
   ),
   curso(
     'curso-python-basico',

@@ -1,7 +1,5 @@
 import {
   aulasAlgoritmos,
-  aulasDockerBasico,
-  aulasDockerIntermediario,
   aulasEmpregabilidade,
   aulasFrontHtmlCssProjeto,
   aulasFrontLandingPage,
@@ -18,6 +16,7 @@ import {
   aulasNodeCrud,
   aulasOratoria,
   aulasPythonBasico,
+  cursos,
   cursosInseridos,
   modulosReactBasico,
   modulosReactIntermediario,
@@ -28,6 +27,7 @@ import {
   modulosPortfolioEntrevista,
   modulosQaCompleto,
 } from './cursos'
+import { duracaoDosCursos, minutosParaDuracao } from '../servicos/duracao'
 
 const videos = {
   informatica: 'https://www.youtube.com/embed/6UQMWqZjd0U',
@@ -55,7 +55,69 @@ function cursoInseridoPorId(id) {
   return cursosInseridos.find((curso) => curso.id === id)
 }
 
-const cursoAngular = cursoInseridoPorId('curso-angular-19-pratica')
+function cursoPorId(id) {
+  return cursos.find((curso) => curso.id === id)
+}
+
+function cursosPorIds(ids) {
+  return ids
+    .map((id) => {
+      const curso = cursoPorId(id)
+
+      if (!curso && import.meta.env?.DEV) {
+        console.warn(`Curso não encontrado para trilha: ${id}`)
+      }
+
+      return curso
+    })
+    .filter(Boolean)
+}
+
+function duracaoDeCursos(ids) {
+  return minutosParaDuracao(duracaoDosCursos(cursosPorIds(ids)))
+}
+
+function modulosDoCurso(id) {
+  const curso = cursoPorId(id)
+  if (!curso) return []
+
+  if (Array.isArray(curso.modulos) && curso.modulos.length) {
+    return curso.modulos.map((modulo, indice) => ({
+      ...modulo,
+      id: modulo.id || `${id}-modulo-${indice + 1}`,
+      cursoId: id,
+      cursoTitulo: curso.titulo,
+      descricao: modulo.descricao || curso.destaque || curso.descricao,
+      aulas: modulo.aulas || [],
+    }))
+  }
+
+  return [{
+    id: `${id}-jornada`,
+    cursoId: id,
+    cursoTitulo: curso.titulo,
+    titulo: curso.titulo,
+    descricao: curso.destaque || curso.descricao,
+    aulas: curso.aulas || [],
+  }]
+}
+
+function modulosDeCursos(ids) {
+  return ids.flatMap(modulosDoCurso)
+}
+
+function criarTrilhaComCursos({ cursoIds = [], duracao, ...trilha }) {
+  const duracaoCalculada = duracaoDeCursos(cursoIds)
+
+  return {
+    ...trilha,
+    duracao: duracaoCalculada || duracao || '0m',
+    cursoIds,
+    modulos: modulosDeCursos(cursoIds),
+  }
+}
+
+const cursoAngular = cursoInseridoPorId('curso-angular-basico')
 const cursoPhp = cursoInseridoPorId('curso-php-iniciante')
 
 export const trilhas = [
@@ -288,6 +350,53 @@ export const trilhas = [
       ...modulosJavaSpring,
     ],
   },
+  criarTrilhaComCursos({
+    id: 'backend-java-profissional',
+    titulo: 'Back-end Java Profissional',
+    categoria: 'Back-end',
+    area: 'backend',
+    nivel: 'Intermediario',
+    tempoSugerido: '16 semanas',
+    tecnologias: ['java', 'sql', 'git-github', 'docker-cloud'],
+    ordemBase: 30,
+    tags: [
+      'java',
+      'spring',
+      'backend',
+      'api',
+      'api-rest',
+      'sql',
+      'junit',
+      'mockito',
+      'arquitetura',
+      'mensageria',
+      'docker',
+      'devops',
+      'seguranca',
+      'portfolio',
+    ],
+    descricao:
+      'Uma jornada completa para sair da base e construir repertorio profissional em Java, APIs, banco de dados, testes, arquitetura, mensageria, DevOps e seguranca.',
+    destaque: 'Caminho robusto para quem quer evoluir em back-end Java com projetos reais.',
+    cursoIds: [
+      'curso-logica-zero',
+      'curso-git-github',
+      'fundamentos-http-api-web',
+      'curso-rest-api-fundamentos',
+      'curso-sql-consultas',
+      'curso-java-poo',
+      'curso-java-spring-api',
+      'curso-spring-boot-api-erudio',
+      'curso-testes-unitarios-junit-mockito',
+      'curso-design-patterns-poo',
+      'curso-arquitetura-limpa-java',
+      'curso-mensageria-microservices',
+      'curso-docker-basico',
+      'devops-cloud-ci-cd',
+      'seguranca-software-owasp',
+      'curso-portfolio-entrevista',
+    ],
+  }),
   {
     id: 'php-backend',
     titulo: 'Back-end com PHP',
@@ -407,34 +516,98 @@ export const trilhas = [
       },
     ],
   },
-  {
+  criarTrilhaComCursos({
     id: 'devops-docker-cloud',
     titulo: 'DevOps Inicial com Docker e Cloud',
     categoria: 'DevOps',
     area: 'devops',
     nivel: 'Basico',
-    duracao: '3h15',
-    tempoSugerido: '5 semanas',
-    tecnologias: ['docker-cloud', 'git-github'],
+    tempoSugerido: '10 semanas',
+    tecnologias: ['docker-cloud', 'linux', 'git-github', 'seguranca'],
     ordemBase: 13,
-    tags: ['devops', 'docker', 'cloud', 'deploy', 'infra'],
-    descricao: 'Entenda Docker, containers, imagens, Dockerfile, Docker Compose, deploy e configuração de aplicações em ambientes modernos.',
-    destaque: 'Para quem quer publicar projetos e entender ambientes de produção.',
-    modulos: [
-      {
-        id: 'docker-base',
-        titulo: 'Nível 1: Docker do zero',
-        descricao: 'Containers, imagens, rede, portas, Dockerfile e deploy em VPS.',
-        aulas: aulasDockerBasico,
-      },
-      {
-        id: 'docker-intermediario',
-        titulo: 'Nível 2: Docker intermediário',
-        descricao: 'Docker Compose, Dockerfile, diferenças para máquinas virtuais e Docker para front-end.',
-        aulas: aulasDockerIntermediario,
-      },
+    tags: ['devops', 'docker', 'docker-compose', 'linux', 'aws', 'cloud', 'ci-cd', 'deploy', 'infra', 'seguranca', 'api'],
+    descricao:
+      'Jornada para publicar e manter aplicacoes com Git, Linux, Docker, Docker Compose, AWS, CI/CD, seguranca e nocao de HTTP/API.',
+    destaque: 'Para quem quer publicar projetos e entender ambientes de producao.',
+    cursoIds: [
+      'curso-git-github',
+      'linux-para-iniciantes',
+      'curso-docker-basico',
+      'curso-cloud-deploy',
+      'curso-aws-cloud-practitioner',
+      'devops-cloud-ci-cd',
+      'curso-seguranca-informacao-pratica',
+      'seguranca-software-owasp',
+      'fundamentos-http-api-web',
     ],
-  },
+  }),
+  criarTrilhaComCursos({
+    id: 'devops-cloud-profissional',
+    titulo: 'DevOps e Cloud Profissional',
+    categoria: 'DevOps',
+    area: 'devops',
+    nivel: 'Intermediario',
+    tempoSugerido: '14 semanas',
+    tecnologias: ['docker-cloud', 'linux', 'git-github', 'seguranca'],
+    ordemBase: 34,
+    tags: ['devops', 'docker', 'docker-compose', 'cloud', 'aws', 'linux', 'ci-cd', 'deploy', 'seguranca', 'portfolio'],
+    descricao:
+      'Jornada profissional para operar projetos com Git, Linux, Docker, cloud, AWS, CI/CD, deploy, seguranca e fundamentos de HTTP/API.',
+    destaque: 'Caminho robusto para quem quer evoluir em infraestrutura, containers e cloud.',
+    cursoIds: [
+      'curso-git-github',
+      'linux-para-iniciantes',
+      'curso-docker-basico',
+      'curso-cloud-deploy',
+      'curso-aws-cloud-practitioner',
+      'devops-cloud-ci-cd',
+      'curso-seguranca-informacao-pratica',
+      'seguranca-software-owasp',
+      'fundamentos-http-api-web',
+    ],
+  }),
+  criarTrilhaComCursos({
+    id: 'linux-fundamentos',
+    titulo: 'Linux para DevOps',
+    categoria: 'DevOps',
+    area: 'devops',
+    nivel: 'Iniciante',
+    tempoSugerido: '3 semanas',
+    tecnologias: ['linux', 'git-github'],
+    ordemBase: 17,
+    tags: ['linux', 'terminal', 'devops', 'infra', 'servidores'],
+    descricao: 'Base de Linux e terminal para trabalhar melhor com servidores, deploy e ambientes de desenvolvimento.',
+    destaque: 'Complemento direto para quem quer atuar com DevOps e infraestrutura.',
+    cursoIds: ['linux-para-iniciantes'],
+  }),
+  criarTrilhaComCursos({
+    id: 'seguranca-informacao',
+    titulo: 'Seguranca para Projetos Web',
+    categoria: 'DevOps',
+    area: 'devops',
+    nivel: 'Basico',
+    tempoSugerido: '4 semanas',
+    tecnologias: ['seguranca', 'api-rest'],
+    ordemBase: 18,
+    tags: ['seguranca', 'owasp', 'boas-praticas', 'api-rest', 'web', 'devops'],
+    descricao: 'Fundamentos de seguranca da informacao e boas praticas OWASP para proteger sistemas web e APIs.',
+    destaque: 'Ajuda a publicar e manter aplicacoes com mais cuidado e criterio.',
+    cursoIds: ['curso-seguranca-informacao-pratica', 'seguranca-software-owasp'],
+  }),
+  criarTrilhaComCursos({
+    id: 'api-http-rest',
+    titulo: 'HTTP e APIs REST',
+    categoria: 'Back-end',
+    area: 'backend',
+    nivel: 'Basico',
+    tempoSugerido: '3 semanas',
+    tecnologias: ['api', 'api-rest'],
+    ordemBase: 19,
+    tags: ['http', 'api', 'api-rest', 'backend', 'qa', 'devops'],
+    descricao: 'Entenda HTTP, REST, status codes, parametros, metodos e boas praticas antes de integrar, testar ou publicar APIs.',
+    destaque: 'Complemento util para back-end, QA e DevOps.',
+    cursoIds: ['fundamentos-http-api-web', 'curso-rest-api-fundamentos'],
+  }),
   {
     id: 'qa-testes',
     titulo: 'QA e Testes para Iniciantes',
@@ -450,6 +623,78 @@ export const trilhas = [
     destaque: 'Uma entrada prática para quem gosta de detalhe, produto e qualidade.',
     modulos: modulosQaCompleto,
   },
+  criarTrilhaComCursos({
+    id: 'backend-node-api-profissional',
+    titulo: 'Back-end Node API Profissional',
+    categoria: 'Back-end',
+    area: 'backend',
+    nivel: 'Intermediario',
+    tempoSugerido: '12 semanas',
+    tecnologias: ['node', 'javascript', 'api-rest', 'sql'],
+    ordemBase: 31,
+    tags: ['node', 'javascript', 'backend', 'api', 'api-rest', 'sql', 'mongodb', 'seguranca', 'docker', 'portfolio'],
+    descricao: 'Jornada para construir APIs com Node, banco de dados, seguranca, Docker e portfolio.',
+    destaque: 'Caminho robusto para quem conhece JavaScript e quer evoluir em APIs.',
+    cursoIds: [
+      'curso-git-github',
+      'fundamentos-http-api-web',
+      'curso-rest-api-fundamentos',
+      'curso-node-api',
+      'curso-node-crud',
+      'curso-sql-consultas',
+      'curso-mongodb-basico-avancado',
+      'seguranca-software-owasp',
+      'curso-docker-basico',
+      'curso-portfolio-entrevista',
+    ],
+  }),
+  criarTrilhaComCursos({
+    id: 'qa-automacao-profissional',
+    titulo: 'QA Automacao Profissional',
+    categoria: 'QA',
+    area: 'qa',
+    nivel: 'Intermediario',
+    tempoSugerido: '10 semanas',
+    tecnologias: ['qa', 'api-rest', 'git-github', 'docker-cloud'],
+    ordemBase: 32,
+    tags: ['qa', 'testes', 'automacao', 'cypress', 'api-rest', 'ci-cd', 'docker', 'seguranca'],
+    descricao: 'Jornada de QA com testes manuais, automacao, testes de API, Git, CI/CD, Docker e seguranca basica.',
+    destaque: 'Para evoluir de fundamentos de QA para automacao e rotina profissional.',
+    cursoIds: [
+      'curso-git-github',
+      'curso-qa-manual',
+      'fundamentos-http-api-web',
+      'curso-rest-api-fundamentos',
+      'testes-api-rest-completo',
+      'curso-cypress-automacao-testes',
+      'devops-cloud-ci-cd',
+      'curso-docker-basico',
+      'seguranca-software-owasp',
+    ],
+  }),
+  criarTrilhaComCursos({
+    id: 'frontend-angular-profissional',
+    titulo: 'Front-end Angular Profissional',
+    categoria: 'Front-end',
+    area: 'frontend',
+    nivel: 'Intermediario',
+    tempoSugerido: '10 semanas',
+    tecnologias: ['angular', 'typescript', 'javascript', 'design-system'],
+    ordemBase: 33,
+    tags: ['angular', 'typescript', 'javascript', 'frontend', 'design-system', 'testes', 'deploy', 'portfolio'],
+    descricao: 'Jornada de front-end com JavaScript, TypeScript, Angular, design system, testes, deploy e portfolio.',
+    destaque: 'Caminho maior para quem quer se aprofundar em Angular com projetos completos.',
+    cursoIds: [
+      'curso-html-css-js',
+      'curso-logica-typescript',
+      'curso-angular-basico',
+      'curso-design-system-figma',
+      'curso-git-github',
+      'curso-docker-basico',
+      'devops-cloud-ci-cd',
+      'curso-portfolio-entrevista',
+    ],
+  }),
   {
     id: 'ingles-tech',
     titulo: 'Inglês para Tecnologia',

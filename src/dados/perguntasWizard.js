@@ -1,19 +1,19 @@
 export const perguntasWizard = [
   {
     id: 'areaAtual',
-    titulo: 'Em qual área você trabalha hoje?',
-    subtitulo: 'Isso ajuda a adaptar a transição para tecnologia.',
+    titulo: 'Em que momento você está hoje?',
+    subtitulo: 'Isso ajuda a ajustar sua trilha para estudo, transição ou evolução na área.',
     opcoes: [
-      { valor: 'administrativo', rotulo: 'Administrativo ou atendimento' },
-      { valor: 'estudante', rotulo: 'Estudante' },
+      { valor: 'estudante', rotulo: 'Sou estudante' },
+      { valor: 'administrativo', rotulo: 'Venho de atendimento ou administrativo' },
       { valor: 'tecnologia', rotulo: 'Já trabalho com tecnologia' },
-      { valor: 'outra', rotulo: 'Outra área' },
+      { valor: 'outra', rotulo: 'Venho de outra área' },
     ],
   },
   {
     id: 'areaDesejada',
     titulo: 'Qual caminho em tecnologia mais combina com você?',
-    subtitulo: 'Escolha o foco principal da sua trilha.',
+    subtitulo: 'Se ainda estiver em dúvida, tudo bem: a plataforma começa pela base.',
     opcoes: [
       { valor: 'frontend', rotulo: 'Front-end e interfaces' },
       { valor: 'backend', rotulo: 'Back-end e APIs' },
@@ -22,6 +22,20 @@ export const perguntasWizard = [
       { valor: 'qa', rotulo: 'QA e testes' },
       { valor: 'produto-suporte', rotulo: 'Produto ou suporte técnico' },
       { valor: 'nao-sei', rotulo: 'Ainda não sei' },
+    ],
+  },
+  {
+    id: 'focoCarreira',
+    titulo: 'Você quer construir telas, sistemas por trás, dados, testes ou infraestrutura?',
+    subtitulo: 'Essa resposta ajuda a escolher cursos mais próximos da rotina que você imagina.',
+    opcoes: [
+      { valor: 'interfaces', rotulo: 'Criar telas e interfaces' },
+      { valor: 'apis', rotulo: 'Criar APIs e sistemas por trás' },
+      { valor: 'dados', rotulo: 'Trabalhar com banco de dados e análise' },
+      { valor: 'testes', rotulo: 'Automatizar testes e encontrar bugs' },
+      { valor: 'cloud-devops', rotulo: 'Publicar sistemas, Docker, Linux e cloud' },
+      { valor: 'seguranca', rotulo: 'Segurança e boas práticas' },
+      { valor: 'explorando', rotulo: 'Ainda estou explorando' },
     ],
   },
   {
@@ -38,12 +52,13 @@ export const perguntasWizard = [
   {
     id: 'programacao',
     titulo: 'Qual é seu nível em programação?',
-    subtitulo: 'A resposta define se a recomendação começa em lógica, linguagem ou framework.',
+    subtitulo: 'A resposta define se a recomendação começa em lógica, linguagem, projeto ou framework.',
     opcoes: [
       { valor: 'nenhum', rotulo: 'Nunca programei' },
-      { valor: 'basico', rotulo: 'Conheço o básico de alguma linguagem' },
+      { valor: 'basico', rotulo: 'Sei lógica básica' },
+      { valor: 'exercicios', rotulo: 'Já fiz exercícios de programação' },
       { valor: 'projetos', rotulo: 'Já fiz pequenos projetos' },
-      { valor: 'experiente', rotulo: 'Já estudo frameworks ou APIs' },
+      { valor: 'experiente', rotulo: 'Já usei framework ou API' },
     ],
   },
   {
@@ -53,8 +68,10 @@ export const perguntasWizard = [
     opcoes: [
       { valor: 'nenhuma', rotulo: 'Nenhuma ainda' },
       { valor: 'javascript', rotulo: 'JavaScript' },
+      { valor: 'typescript', rotulo: 'TypeScript' },
       { valor: 'python', rotulo: 'Python' },
       { valor: 'java', rotulo: 'Java' },
+      { valor: 'csharp', rotulo: 'C#' },
       { valor: 'go', rotulo: 'Go' },
       { valor: 'php', rotulo: 'PHP' },
       { valor: 'sql', rotulo: 'SQL' },
@@ -63,20 +80,27 @@ export const perguntasWizard = [
   {
     id: 'tecnologiaInteresse',
     titulo: 'Qual tecnologia você quer priorizar agora?',
-    subtitulo: 'Isso ajuda a indicar cursos mais específicos, como Go básico ou Go para APIs.',
+    subtitulo: 'Você pode escolher uma stack específica ou uma base importante para projetos.',
     opcoes: [
       { valor: 'nenhuma', rotulo: 'Ainda não tenho preferência' },
       { valor: 'javascript', rotulo: 'JavaScript' },
+      { valor: 'typescript', rotulo: 'TypeScript' },
       { valor: 'react', rotulo: 'React' },
       { valor: 'angular', rotulo: 'Angular' },
       { valor: 'node', rotulo: 'Node.js' },
-      { valor: 'python', rotulo: 'Python' },
       { valor: 'java', rotulo: 'Java' },
-      { valor: 'go', rotulo: 'Go' },
+      { valor: 'java-spring', rotulo: 'Spring Boot' },
       { valor: 'php', rotulo: 'PHP' },
+      { valor: 'go', rotulo: 'Go' },
+      { valor: 'python', rotulo: 'Python' },
       { valor: 'sql', rotulo: 'SQL' },
+      { valor: 'mongodb', rotulo: 'MongoDB' },
+      { valor: 'api-rest', rotulo: 'APIs REST' },
       { valor: 'git-github', rotulo: 'Git e GitHub' },
       { valor: 'docker-cloud', rotulo: 'Docker e cloud' },
+      { valor: 'linux', rotulo: 'Linux' },
+      { valor: 'qa', rotulo: 'QA e testes' },
+      { valor: 'seguranca', rotulo: 'Segurança' },
     ],
   },
   {
@@ -88,6 +112,54 @@ export const perguntasWizard = [
       { valor: 'basico', rotulo: 'Sei o básico' },
       { valor: 'projetos', rotulo: 'Já fiz projetos' },
       { valor: 'avancar', rotulo: 'Quero me aprofundar' },
+    ],
+  },
+  {
+    id: 'experienciaProjetos',
+    titulo: 'Você já criou algum projeto, mesmo pequeno?',
+    subtitulo: 'Isso diferencia quem só viu aula de quem já praticou em algo próprio ou em equipe.',
+    opcoes: [
+      { valor: 'nenhuma', rotulo: 'Ainda não fiz projeto' },
+      { valor: 'tutorial', rotulo: 'Só acompanhei projeto de aula ou tutorial' },
+      { valor: 'proprio', rotulo: 'Já fiz projeto próprio simples' },
+      { valor: 'equipe', rotulo: 'Já fiz projeto em equipe' },
+      { valor: 'profissional', rotulo: 'Já trabalhei em projeto real ou profissional' },
+    ],
+  },
+  {
+    id: 'baseBackendDados',
+    titulo: 'Você já mexeu com banco de dados ou APIs?',
+    subtitulo: 'Essa base ajuda bastante em back-end, dados, QA de API e projetos reais.',
+    opcoes: [
+      { valor: 'nenhum', rotulo: 'Não conheço banco nem API' },
+      { valor: 'banco', rotulo: 'Conheço um pouco de banco de dados ou SQL' },
+      { valor: 'api', rotulo: 'Sei o básico de APIs ou HTTP' },
+      { valor: 'ambos', rotulo: 'Conheço banco e APIs' },
+      { valor: 'projetos', rotulo: 'Já usei banco e API em projeto' },
+    ],
+  },
+  {
+    id: 'objetivo',
+    titulo: 'Qual é seu objetivo principal agora?',
+    subtitulo: 'Vamos equilibrar estudo, prática e empregabilidade.',
+    opcoes: [
+      { valor: 'primeira-vaga', rotulo: 'Conseguir a primeira vaga em TI' },
+      { valor: 'portfolio', rotulo: 'Montar portfólio com projetos' },
+      { valor: 'transicao', rotulo: 'Migrar de área com segurança' },
+      { valor: 'especializar', rotulo: 'Me especializar em uma stack' },
+      { valor: 'freelancer', rotulo: 'Fazer projetos como freelancer' },
+      { valor: 'melhorar-emprego-atual', rotulo: 'Melhorar meu emprego atual' },
+    ],
+  },
+  {
+    id: 'tempoSemanal',
+    titulo: 'Quanto tempo você consegue estudar por semana?',
+    subtitulo: 'A recomendação ajusta ritmo e tamanho dos cursos.',
+    opcoes: [
+      { valor: 'baixo', rotulo: 'Até 3 horas' },
+      { valor: 'medio', rotulo: '4 a 7 horas' },
+      { valor: 'alto', rotulo: '8 a 12 horas' },
+      { valor: 'intenso', rotulo: 'Mais de 12 horas' },
     ],
   },
   {
@@ -113,28 +185,6 @@ export const perguntasWizard = [
     ],
   },
   {
-    id: 'tempoSemanal',
-    titulo: 'Quanto tempo você consegue estudar por semana?',
-    subtitulo: 'A recomendação ajusta ritmo e tamanho dos cursos.',
-    opcoes: [
-      { valor: 'baixo', rotulo: 'Até 3 horas' },
-      { valor: 'medio', rotulo: '4 a 7 horas' },
-      { valor: 'alto', rotulo: '8 a 12 horas' },
-      { valor: 'intenso', rotulo: 'Mais de 12 horas' },
-    ],
-  },
-  {
-    id: 'objetivo',
-    titulo: 'Qual é seu objetivo principal agora?',
-    subtitulo: 'Vamos equilibrar estudo, prática e empregabilidade.',
-    opcoes: [
-      { valor: 'primeira-vaga', rotulo: 'Conseguir a primeira vaga em TI' },
-      { valor: 'portfolio', rotulo: 'Montar portfólio com projetos' },
-      { valor: 'transicao', rotulo: 'Migrar de área com segurança' },
-      { valor: 'especializar', rotulo: 'Me especializar em uma stack' },
-    ],
-  },
-  {
     id: 'softSkills',
     titulo: 'Como você se sente em entrevistas e comunicação?',
     subtitulo: 'A plataforma também recomenda trilhas de carreira e desenvolvimento pessoal.',
@@ -145,4 +195,4 @@ export const perguntasWizard = [
       { valor: 'forte', rotulo: 'Gosto de apresentar e conversar' },
     ],
   },
-];
+]

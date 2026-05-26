@@ -2,20 +2,232 @@
 import { createContext, useContext, useState } from 'react'
 import { empresas as empresasBase } from '../dados/empresas'
 import { candidatosMock, vagas as vagasBase } from '../dados/vagas'
-import { bangobalango, usuarios as usuariosBase } from '../dados/usuarios'
+import { usuarios as usuariosBase } from '../dados/usuarios'
 import { lerStorage, removerStorage, salvarStorage } from '../servicos/storage'
 
 const AppContext = createContext(null)
 
-const candidaturaInicial = [
-  {
-    id: 'cand-app-1',
-    vagaId: 'vaga-1',
-    alunoId: 'aluno-1',
-    status: 'Em andamento',
-    atualizadoEm: '2026-05-01 18:20',
-  },
-]
+const candidaturaInicial = []
+
+const DEMO_ALUNO_ID = 'aluno-1'
+const DEMO_EMPRESA_ID = 'empresa-1'
+const CHAVE_RESET_WIZARD_DEMO = 'demoWizardResetado'
+const CHAVE_DEMO_ALUNO_PERFIL = 'demoAlunoPerfilAtualizadoV1'
+const CHAVE_AVANADE_EMPRESA = 'avanadeEmpresaAtualizadaV4'
+const CHAVE_AVANADE_VAGAS = 'avanadeVagasAtualizadasV4'
+const CHAVE_AVANADE_CANDIDATOS = 'avanadeCandidatosAtualizadosV2'
+const VAGAS_MOCK_ANTIGAS = new Set(['vaga-2', 'vaga-3', 'vaga-4', 'vaga-5'])
+const CANDIDATOS_MOCK_ANTIGOS = new Set([
+  'cand-3',
+  'cand-4',
+  'cand-5',
+  'cand-6',
+  'cand-7',
+  'cand-8',
+  'cand-9',
+  'cand-10',
+  'cand-11',
+  'cand-12',
+  'cand-13',
+])
+
+function empresaDemoBase() {
+  return empresasBase.find((empresa) => empresa.id === DEMO_EMPRESA_ID)
+}
+
+function sincronizarEmpresaDemo(empresa) {
+  const base = empresaDemoBase()
+  if (!base || empresa?.id !== DEMO_EMPRESA_ID) return empresa
+
+  return {
+    ...empresa,
+    ...base,
+    tipo: empresa.tipo || 'empresa',
+  }
+}
+
+function normalizarAluno(usuario) {
+  if (!usuario || usuario.tipo !== 'aluno') return usuario
+
+  const respostasWizard = usuario.respostasWizard && typeof usuario.respostasWizard === 'object' ? usuario.respostasWizard : {}
+  const base = usuariosBase.find((aluno) => aluno.id === usuario.id)
+
+  return {
+    ...usuario,
+    fotoUrl: usuario.fotoUrl || base?.fotoUrl || '',
+    capaUrl: usuario.capaUrl || base?.capaUrl || '',
+    respostasWizard,
+    wizardConcluido: Boolean(usuario.wizardConcluido || Object.keys(respostasWizard).length),
+    cursosConcluidos: Array.isArray(usuario.cursosConcluidos) ? usuario.cursosConcluidos : [],
+    certificados: Array.isArray(usuario.certificados) ? usuario.certificados : [],
+    progresso: usuario.progresso && typeof usuario.progresso === 'object' ? usuario.progresso : {},
+  }
+}
+
+function normalizarUsuarios(lista) {
+  return Array.isArray(lista) ? lista.map((usuario) => normalizarAluno(usuario)) : []
+}
+
+function substituirAluno(lista, alunoAtualizado) {
+  let encontrouAluno = false
+  const listaAtualizada = lista.map((usuario) => {
+    if (usuario.id !== alunoAtualizado.id) return usuario
+    encontrouAluno = true
+    return alunoAtualizado
+  })
+
+  return encontrouAluno ? listaAtualizada : [...listaAtualizada, alunoAtualizado]
+}
+
+function criarIdAluno() {
+  return globalThis.crypto?.randomUUID?.() || `usuario-${Date.now()}`
+}
+
+function carregarVagasIniciais() {
+  const salvas = lerStorage('vagasEmpresa', null)
+  if (!Array.isArray(salvas)) {
+    salvarStorage(CHAVE_AVANADE_VAGAS, true)
+    return vagasBase
+  }
+
+  if (!lerStorage(CHAVE_AVANADE_VAGAS, false)) {
+    const idsBase = new Set(vagasBase.map((vaga) => vaga.id))
+    const vagasCustomizadas = salvas.filter((vaga) => !idsBase.has(vaga.id) && !VAGAS_MOCK_ANTIGAS.has(vaga.id))
+    const listaAtualizada = [...vagasBase, ...vagasCustomizadas]
+    salvarStorage('vagasEmpresa', listaAtualizada)
+    salvarStorage(CHAVE_AVANADE_VAGAS, true)
+    return listaAtualizada
+  }
+
+  const vagasLimpas = salvas.filter((vaga) => !VAGAS_MOCK_ANTIGAS.has(vaga.id))
+  const idsSalvos = new Set(vagasLimpas.map((vaga) => vaga.id))
+  const vagasBaseNovas = vagasBase.filter((vaga) => !idsSalvos.has(vaga.id) && !VAGAS_MOCK_ANTIGAS.has(vaga.id))
+  const vagasNormalizadas = [...vagasLimpas, ...vagasBaseNovas].filter(Boolean)
+
+  if (vagasNormalizadas.length !== salvas.length || vagasBaseNovas.length) {
+    salvarStorage('vagasEmpresa', vagasNormalizadas)
+  }
+
+  return vagasNormalizadas
+}
+
+function carregarEmpresasIniciais() {
+  const salvas = lerStorage('empresas', null)
+  if (!Array.isArray(salvas)) {
+    salvarStorage(CHAVE_AVANADE_EMPRESA, true)
+    return empresasBase
+  }
+
+  if (!lerStorage(CHAVE_AVANADE_EMPRESA, false)) {
+    const temEmpresaDemo = salvas.some((empresa) => empresa.id === DEMO_EMPRESA_ID)
+    const listaAtualizada = temEmpresaDemo
+      ? salvas.map((empresa) => sincronizarEmpresaDemo(empresa))
+      : [empresaDemoBase(), ...salvas].filter(Boolean)
+
+    salvarStorage('empresas', listaAtualizada)
+    salvarStorage(CHAVE_AVANADE_EMPRESA, true)
+    return listaAtualizada
+  }
+
+  const temEmpresaDemo = salvas.some((empresa) => empresa.id === DEMO_EMPRESA_ID)
+  const listaFinal = temEmpresaDemo ? salvas : [empresaDemoBase(), ...salvas].filter(Boolean)
+
+  if (!temEmpresaDemo) {
+    salvarStorage('empresas', listaFinal)
+  }
+
+  return listaFinal
+}
+
+function carregarCandidatosIniciais() {
+  const salvos = lerStorage('candidatos', null)
+  if (!Array.isArray(salvos)) {
+    salvarStorage(CHAVE_AVANADE_CANDIDATOS, true)
+    return candidatosMock
+  }
+
+  if (!lerStorage(CHAVE_AVANADE_CANDIDATOS, false)) {
+    const idsBase = new Set(candidatosMock.map((candidato) => candidato.id))
+    const customizados = salvos.filter(
+      (candidato) => !idsBase.has(candidato.id) && !CANDIDATOS_MOCK_ANTIGOS.has(candidato.id) && candidato.vagaId,
+    )
+    const listaAtualizada = [...candidatosMock, ...customizados]
+    salvarStorage('candidatos', listaAtualizada)
+    salvarStorage(CHAVE_AVANADE_CANDIDATOS, true)
+    return listaAtualizada
+  }
+
+  const salvosLimpos = salvos.filter((candidato) => !CANDIDATOS_MOCK_ANTIGOS.has(candidato.id))
+  const idsSalvos = new Set(salvosLimpos.map((candidato) => candidato.id))
+  const novosBase = candidatosMock.filter((candidato) => !idsSalvos.has(candidato.id))
+  const normalizados = [...salvosLimpos, ...novosBase]
+
+  if (novosBase.length || salvosLimpos.length !== salvos.length) {
+    salvarStorage('candidatos', normalizados)
+  }
+
+  return normalizados
+}
+
+function carregarEstadoInicial() {
+  let usuarios = normalizarUsuarios(lerStorage('usuarios', usuariosBase))
+  let usuarioAtual = lerStorage('usuarioAtual', null)
+
+  if (lerStorage('wizard', null) !== null) {
+    removerStorage('wizard')
+  }
+
+  if (!lerStorage(CHAVE_RESET_WIZARD_DEMO, false)) {
+    usuarios = usuarios.map((usuario) =>
+      usuario.id === DEMO_ALUNO_ID
+        ? normalizarAluno({
+            ...usuario,
+            respostasWizard: {},
+            wizardConcluido: false,
+          })
+        : usuario,
+    )
+    salvarStorage('usuarios', usuarios)
+    salvarStorage(CHAVE_RESET_WIZARD_DEMO, true)
+  }
+
+  if (!lerStorage(CHAVE_DEMO_ALUNO_PERFIL, false)) {
+    const alunoDemoBase = usuariosBase.find((usuario) => usuario.id === DEMO_ALUNO_ID)
+
+    if (alunoDemoBase) {
+      usuarios = usuarios.map((usuario) =>
+        usuario.id === DEMO_ALUNO_ID
+          ? normalizarAluno({
+              ...usuario,
+              bio: alunoDemoBase.bio,
+              capaUrl: alunoDemoBase.capaUrl,
+            })
+          : usuario,
+      )
+
+      if (usuarioAtual?.id === DEMO_ALUNO_ID) {
+        usuarioAtual = usuarios.find((usuario) => usuario.id === DEMO_ALUNO_ID) || usuarioAtual
+        salvarStorage('usuarioAtual', usuarioAtual)
+      }
+
+      salvarStorage('usuarios', usuarios)
+    }
+
+    salvarStorage(CHAVE_DEMO_ALUNO_PERFIL, true)
+  }
+
+  if (usuarioAtual?.tipo === 'aluno') {
+    const usuarioNaLista = usuarios.find((usuario) => usuario.id === usuarioAtual.id)
+    usuarioAtual = normalizarAluno(usuarioNaLista || usuarioAtual)
+  }
+
+  if (usuarioAtual?.tipo === 'empresa' && usuarioAtual.id === DEMO_EMPRESA_ID && !lerStorage(CHAVE_AVANADE_EMPRESA, false)) {
+    usuarioAtual = sincronizarEmpresaDemo(usuarioAtual)
+    salvarStorage('usuarioAtual', usuarioAtual)
+  }
+
+  return { usuarios, usuarioAtual }
+}
 
 function normalizarLista(valor) {
   if (Array.isArray(valor)) return valor.filter(Boolean)
@@ -34,14 +246,14 @@ function normalizarTags(valor) {
 }
 
 export function AppProvider({ children }) {
-  const [usuarios, setUsuarios] = useState(() => lerStorage('usuarios', usuariosBase))
-  const [empresas, setEmpresas] = useState(() => lerStorage('empresas', empresasBase))
-  const [usuarioAtual, setUsuarioAtual] = useState(() => lerStorage('usuarioAtual', null))
-  const [respostasWizard, setRespostasWizard] = useState(() => lerStorage('wizard', {}))
+  const [estadoInicial] = useState(() => carregarEstadoInicial())
+  const [usuarios, setUsuarios] = useState(() => estadoInicial.usuarios)
+  const [empresas, setEmpresas] = useState(() => carregarEmpresasIniciais())
+  const [usuarioAtual, setUsuarioAtual] = useState(() => estadoInicial.usuarioAtual)
   const [progressoCursos, setProgressoCursos] = useState(() => lerStorage('progressoCursos', {}))
   const [candidaturas, setCandidaturas] = useState(() => lerStorage('candidaturas', candidaturaInicial))
-  const [vagasEmpresa, setVagasEmpresa] = useState(() => lerStorage('vagasEmpresa', vagasBase))
-  const [candidatos, setCandidatos] = useState(() => lerStorage('candidatos', candidatosMock))
+  const [vagasEmpresa, setVagasEmpresa] = useState(() => carregarVagasIniciais())
+  const [candidatos, setCandidatos] = useState(() => carregarCandidatosIniciais())
 
   function persistir(chave, setter) {
     return (valorOuFn) => {
@@ -55,7 +267,6 @@ export function AppProvider({ children }) {
 
   const setUsuariosPersistido = persistir('usuarios', setUsuarios)
   const setEmpresasPersistido = persistir('empresas', setEmpresas)
-  const setRespostasPersistidas = persistir('wizard', setRespostasWizard)
   const setProgressoPersistido = persistir('progressoCursos', setProgressoCursos)
   const setCandidaturasPersistidas = persistir('candidaturas', setCandidaturas)
   const setVagasPersistidas = persistir('vagasEmpresa', setVagasEmpresa)
@@ -64,28 +275,24 @@ export function AppProvider({ children }) {
   function login(email, senha) {
     const aluno = usuarios.find((item) => item.email === email && item.senha === senha)
     const empresa = empresas.find((item) => item.email === email && item.senha === senha)
-    const conta = aluno || (empresa ? { ...empresa, tipo: 'empresa' } : null)
+    const conta = aluno ? normalizarAluno(aluno) : empresa ? { ...empresa, tipo: 'empresa' } : null
 
     if (!conta) {
       return { ok: false, mensagem: 'E-mail ou senha invalidos.' }
     }
 
-    const deveForcarWizard =
-      conta.tipo === 'aluno' &&
-      conta.id === bangobalango.alunoId &&
-      bangobalango.bangobalangoo
+    const contaAtualizada = conta
 
-    if (deveForcarWizard) {
-      setRespostasWizard({})
-      removerStorage('wizard')
+    if (contaAtualizada.tipo === 'aluno') {
+      setUsuariosPersistido((lista) => substituirAluno(lista, contaAtualizada))
     }
 
-    setUsuarioAtual(conta)
-    salvarStorage('usuarioAtual', conta)
+    setUsuarioAtual(contaAtualizada)
+    salvarStorage('usuarioAtual', contaAtualizada)
     return {
       ok: true,
-      usuario: conta,
-      redirecionarPara: deveForcarWizard ? '/aluno/questionario' : conta.tipo === 'empresa' ? '/empresa/painel' : '/aluno/painel',
+      usuario: contaAtualizada,
+      redirecionarPara: contaAtualizada.tipo === 'empresa' ? '/empresa/painel' : '/aluno/painel',
     }
   }
 
@@ -96,7 +303,8 @@ export function AppProvider({ children }) {
 
   function cadastrarAluno(dados) {
     const novo = {
-      id: `aluno-${Date.now()}`,
+      ...dados,
+      id: criarIdAluno(),
       tipo: 'aluno',
       foto: dados.nome
         .split(' ')
@@ -105,8 +313,11 @@ export function AppProvider({ children }) {
         .join('')
         .toUpperCase(),
       tecnologias: [],
+      respostasWizard: {},
+      wizardConcluido: false,
+      cursosConcluidos: [],
       certificados: [],
-      ...dados,
+      progresso: {},
     }
     setUsuariosPersistido((lista) => [...lista, novo])
     setUsuarioAtual(novo)
@@ -126,7 +337,7 @@ export function AppProvider({ children }) {
         .toUpperCase(),
       capa:
         'linear-gradient(120deg, rgba(15, 23, 42, 0.95), rgba(20, 184, 166, 0.72))',
-      descricao: dados.descricao || 'Empresa parceira da RiseUp em busca de talentos em formacao.',
+      descricao: dados.descricao || 'Empresa parceira da RiseUp em busca de talentos em formação.',
       localizacao: dados.localizacao || 'Brasil',
       site: dados.site || 'https://riseup.dev',
       ...dados,
@@ -138,7 +349,31 @@ export function AppProvider({ children }) {
   }
 
   function salvarWizard(respostas) {
-    setRespostasPersistidas(respostas)
+    if (!usuarioAtual || usuarioAtual.tipo !== 'aluno') return
+
+    const atualizado = normalizarAluno({
+      ...usuarioAtual,
+      respostasWizard: respostas,
+      wizardConcluido: true,
+    })
+
+    setUsuarioAtual(atualizado)
+    salvarStorage('usuarioAtual', atualizado)
+    setUsuariosPersistido((lista) => substituirAluno(lista, atualizado))
+  }
+
+  function pularWizard() {
+    if (!usuarioAtual || usuarioAtual.tipo !== 'aluno') return
+
+    const atualizado = normalizarAluno({
+      ...usuarioAtual,
+      respostasWizard: {},
+      wizardConcluido: true,
+    })
+
+    setUsuarioAtual(atualizado)
+    salvarStorage('usuarioAtual', atualizado)
+    setUsuariosPersistido((lista) => substituirAluno(lista, atualizado))
   }
 
   function alternarAula(aulaId) {
@@ -146,27 +381,52 @@ export function AppProvider({ children }) {
   }
 
   function candidatar(vagaId) {
-    setCandidaturasPersistidas((lista) => {
-      if (lista.some((item) => item.vagaId === vagaId && item.alunoId === usuarioAtual?.id)) {
-        return lista
-      }
-      return [
-        ...lista,
-        {
-          id: `cand-${Date.now()}`,
-          vagaId,
-          alunoId: usuarioAtual?.id || 'aluno-demo',
-          status: 'Candidatura enviada',
-          atualizadoEm: new Date().toLocaleString('pt-BR'),
-        },
-      ]
-    })
+    const jaCandidatou = candidaturas.some((item) => item.vagaId === vagaId && item.alunoId === usuarioAtual?.id)
+    if (jaCandidatou) return
+
+    setCandidaturasPersistidas((lista) => [
+      ...lista,
+      {
+        id: `cand-app-${Date.now()}`,
+        vagaId,
+        alunoId: usuarioAtual?.id || 'aluno-demo',
+        status: 'Candidatura enviada',
+        atualizadoEm: new Date().toLocaleString('pt-BR'),
+        perfilSnapshot: usuarioAtual
+          ? {
+              nome: usuarioAtual.nome,
+              titulo: usuarioAtual.titulo || usuarioAtual.cargoAtual,
+              cargoAtual: usuarioAtual.cargoAtual,
+              localizacao: usuarioAtual.localizacao,
+              bio: usuarioAtual.bio,
+              foto: usuarioAtual.foto,
+              fotoUrl: usuarioAtual.fotoUrl,
+              capaUrl: usuarioAtual.capaUrl,
+              tecnologias: usuarioAtual.tecnologias,
+              cursosConcluidos: usuarioAtual.cursosConcluidos,
+              certificados: usuarioAtual.certificados,
+              respostasWizard: usuarioAtual.respostasWizard,
+            }
+          : null,
+      },
+    ])
+    setVagasPersistidas((lista) =>
+      lista.map((vaga) => (vaga.id === vagaId ? { ...vaga, candidatos: Number(vaga.candidatos || 0) + 1 } : vaga)),
+    )
   }
 
   function cancelarCandidatura(vagaId) {
+    const tinhaCandidatura = candidaturas.some((item) => item.vagaId === vagaId && item.alunoId === usuarioAtual?.id)
     setCandidaturasPersistidas((lista) =>
       lista.filter((item) => !(item.vagaId === vagaId && item.alunoId === usuarioAtual?.id)),
     )
+    if (tinhaCandidatura) {
+      setVagasPersistidas((lista) =>
+        lista.map((vaga) =>
+          vaga.id === vagaId ? { ...vaga, candidatos: Math.max(0, Number(vaga.candidatos || 0) - 1) } : vaga,
+        ),
+      )
+    }
   }
 
   function publicarVaga(dados) {
@@ -210,6 +470,11 @@ export function AppProvider({ children }) {
     setCandidatosPersistidos((lista) =>
       lista.map((candidato) => (candidato.id === candidatoId ? { ...candidato, status } : candidato)),
     )
+    setCandidaturasPersistidas((lista) =>
+      lista.map((candidatura) =>
+        candidatura.id === candidatoId ? { ...candidatura, status, atualizadoEm: new Date().toLocaleString('pt-BR') } : candidatura,
+      ),
+    )
   }
 
   function atualizarEmpresa(dados) {
@@ -222,11 +487,13 @@ export function AppProvider({ children }) {
 
   function atualizarAluno(dados) {
     if (!usuarioAtual) return
-    const atualizado = { ...usuarioAtual, ...dados }
+    const atualizado = normalizarAluno({ ...usuarioAtual, ...dados })
     setUsuarioAtual(atualizado)
     salvarStorage('usuarioAtual', atualizado)
-    setUsuariosPersistido((lista) => lista.map((usuario) => (usuario.id === atualizado.id ? atualizado : usuario)))
+    setUsuariosPersistido((lista) => substituirAluno(lista, atualizado))
   }
+
+  const respostasWizard = usuarioAtual?.tipo === 'aluno' ? usuarioAtual.respostasWizard || {} : {}
 
   const valor = {
     usuarios,
@@ -242,6 +509,7 @@ export function AppProvider({ children }) {
     cadastrarAluno,
     cadastrarEmpresa,
     salvarWizard,
+    pularWizard,
     alternarAula,
     candidatar,
     cancelarCandidatura,

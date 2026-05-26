@@ -7,6 +7,7 @@ import { Botao } from '../../../componentes/interface/Botao'
 import { VagaCard } from '../../../componentes/vagas/VagaCard'
 import { useApp } from '../../../contextos/AppContext'
 import { modoApresentacao } from '../../../dados/usuarios'
+import { contarCandidatosDaVaga } from '../../../servicos/candidaturas'
 import { calcularProgresso, recomendarCursos, recomendarTrilhas, recomendarVagas } from '../../../servicos/recomendacoes'
 
 const rotulos = {
@@ -17,11 +18,11 @@ const rotulos = {
 }
 
 export function PainelAluno() {
-  const { usuarioAtual, respostasWizard, progressoCursos, candidaturas } = useApp()
+  const { usuarioAtual, respostasWizard, progressoCursos, candidaturas, candidatos, vagasEmpresa, empresas } = useApp()
   const apresentacaoAtiva = modoApresentacao.ativo
   const recomendadas = recomendarTrilhas(respostasWizard)
   const cursosSugeridos = recomendarCursos(respostasWizard).slice(0, 4)
-  const vagas = apresentacaoAtiva ? [] : recomendarVagas(respostasWizard, candidaturas).slice(0, 3)
+  const vagas = apresentacaoAtiva ? [] : recomendarVagas(respostasWizard, candidaturas, vagasEmpresa, empresas).slice(0, 3)
   const temWizard = Object.keys(respostasWizard).length > 0
   const primeiroNome = usuarioAtual?.nome?.split(' ')[0] || 'aluno'
   const iniciais = usuarioAtual?.foto || primeiroNome.slice(0, 2).toUpperCase()
@@ -154,7 +155,15 @@ export function PainelAluno() {
           {apresentacaoAtiva ? (
             <p>Vazio vazio man</p>
           ) : (
-            vagas.map((vaga) => <VagaCard key={vaga.id} vaga={vaga} empresa={vaga.empresa} match={vaga.match} />)
+            vagas.map((vaga) => (
+              <VagaCard
+                key={vaga.id}
+                vaga={vaga}
+                empresa={vaga.empresa}
+                match={vaga.match}
+                totalCandidatos={contarCandidatosDaVaga(vaga.id, candidatos, candidaturas)}
+              />
+            ))
           )}
         </div>
       </section>
