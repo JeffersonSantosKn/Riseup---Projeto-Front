@@ -237,6 +237,10 @@ function calcularTecnologiasEstudadas(progressoCursos = {}) {
 
 function candidatoDaCandidatura(candidatura, usuario, progressoCursos) {
   const perfil = { ...(candidatura.perfilSnapshot || {}), ...(usuario || {}) }
+  const progressoDoPerfil =
+    perfil.progresso && typeof perfil.progresso === 'object'
+      ? perfil.progresso
+      : progressoCursos
 
   return {
     id: candidatura.id,
@@ -254,7 +258,8 @@ function candidatoDaCandidatura(candidatura, usuario, progressoCursos) {
     cursosConcluidos: Array.isArray(perfil.cursosConcluidos) ? perfil.cursosConcluidos : [],
     certificados: Array.isArray(perfil.certificados) ? perfil.certificados : [],
     tecnologias: tecnologiasDoUsuario(perfil),
-    tecnologiasEstudadas: calcularTecnologiasEstudadas(progressoCursos),
+    tecnologiasEstudadas: calcularTecnologiasEstudadas(progressoDoPerfil),
+    progressoCursos: progressoDoPerfil,
     atualizadoEm: candidatura.atualizadoEm,
     origem: 'candidatura',
   }
@@ -321,7 +326,7 @@ function stackOptions(vaga, empresa) {
 
 export function ListaCandidatos() {
   const { vagaId } = useParams()
-  const { usuarioAtual, vagasEmpresa, candidatos, candidaturas, usuarios, progressoCursos, atualizarStatusCandidato } = useApp()
+  const { usuarioAtual, vagasEmpresa, candidatos, candidaturas, usuarios, atualizarStatusCandidato } = useApp()
   const [busca, setBusca] = useState('')
   const [filtroCompatibilidade, setFiltroCompatibilidade] = useState('todos')
   const [filtroStack, setFiltroStack] = useState('todos')
@@ -338,7 +343,7 @@ export function ListaCandidatos() {
         candidatoDaCandidatura(
           candidatura,
           usuarios.find((usuario) => usuario.id === candidatura.alunoId),
-          progressoCursos,
+          candidatura.perfilSnapshot?.progresso || {},
         ),
       )
   const candidatosDaVaga = [...mockados, ...candidatosReais].map((candidato) => ({
@@ -375,7 +380,7 @@ export function ListaCandidatos() {
 
   function abrirCursoPreview(nomeCurso) {
     if (!perfilPreview) return
-    setCursoPreview(criarPreviewConteudo(nomeCurso, progressoCursos, perfilPreview))
+    setCursoPreview(criarPreviewConteudo(nomeCurso, perfilPreview.progressoCursos || {}, perfilPreview))
     setAbaCursoPreview('conteudo')
   }
 
@@ -507,7 +512,7 @@ export function ListaCandidatos() {
                 <span>Cursos no perfil</span>
               </article>
               <article>
-                <strong>{horasEstudadasDoPerfil(perfilPreview, progressoCursos)}</strong>
+                <strong>{horasEstudadasDoPerfil(perfilPreview, perfilPreview.progressoCursos || {})}</strong>
                 <span>Horas estudadas</span>
               </article>
               <article>
