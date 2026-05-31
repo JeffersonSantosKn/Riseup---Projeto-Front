@@ -11,6 +11,7 @@ const candidaturaInicial = []
 
 const DEMO_ALUNO_ID = 'aluno-1'
 const DEMO_EMPRESA_ID = 'empresa-1'
+const CONTAS_MOCK_LOGIN = new Set([DEMO_ALUNO_ID, DEMO_EMPRESA_ID, 'empresa-2'])
 const CHAVE_RESET_WIZARD_DEMO = 'demoWizardResetado'
 const CHAVE_DEMO_ALUNO_PERFIL = 'demoAlunoPerfilAtualizadoV1'
 const CHAVE_AVANADE_EMPRESA = 'avanadeEmpresaAtualizadaV4'
@@ -81,6 +82,23 @@ function substituirAluno(lista, alunoAtualizado) {
 
 function criarIdAluno() {
   return globalThis.crypto?.randomUUID?.() || `usuario-${Date.now()}`
+}
+
+function criarIdEmpresa() {
+  return globalThis.crypto?.randomUUID?.() || `empresa-${Date.now()}`
+}
+
+function normalizarEmail(email) {
+  return String(email || '').trim().toLowerCase()
+}
+
+function ehContaMockLogin(conta) {
+  return CONTAS_MOCK_LOGIN.has(conta?.id)
+}
+
+function emailJaExiste(email, usuarios = [], empresas = []) {
+  const alvo = normalizarEmail(email)
+  return [...usuarios, ...empresas].some((conta) => normalizarEmail(conta.email) === alvo)
 }
 
 function carregarVagasIniciais() {
@@ -170,11 +188,23 @@ function carregarCandidatosIniciais() {
 }
 
 function carregarEstadoInicial() {
-  let usuarios = normalizarUsuarios(lerStorage('usuarios', usuariosBase))
+  const usuariosSalvos = lerStorage('usuarios', null)
+  let usuarios = normalizarUsuarios(Array.isArray(usuariosSalvos) ? usuariosSalvos : []).filter(
+    (usuario) => !ehContaMockLogin(usuario),
+  )
   let usuarioAtual = lerStorage('usuarioAtual', null)
+
+  if (Array.isArray(usuariosSalvos) && usuarios.length !== usuariosSalvos.length) {
+    salvarStorage('usuarios', usuarios)
+  }
 
   if (lerStorage('wizard', null) !== null) {
     removerStorage('wizard')
+  }
+
+  if (ehContaMockLogin(usuarioAtual)) {
+    usuarioAtual = null
+    removerStorage('usuarioAtual')
   }
 
   if (!lerStorage(CHAVE_RESET_WIZARD_DEMO, false)) {
@@ -218,12 +248,12 @@ function carregarEstadoInicial() {
 
   if (usuarioAtual?.tipo === 'aluno') {
     const usuarioNaLista = usuarios.find((usuario) => usuario.id === usuarioAtual.id)
-    usuarioAtual = normalizarAluno(usuarioNaLista || usuarioAtual)
-  }
-
-  if (usuarioAtual?.tipo === 'empresa' && usuarioAtual.id === DEMO_EMPRESA_ID && !lerStorage(CHAVE_AVANADE_EMPRESA, false)) {
-    usuarioAtual = sincronizarEmpresaDemo(usuarioAtual)
-    salvarStorage('usuarioAtual', usuarioAtual)
+    if (usuarioNaLista) {
+      usuarioAtual = normalizarAluno(usuarioNaLista)
+    } else {
+      usuarioAtual = null
+      removerStorage('usuarioAtual')
+    }
   }
 
   return { usuarios, usuarioAtual }
@@ -250,7 +280,6 @@ export function AppProvider({ children }) {
   const [usuarios, setUsuarios] = useState(() => estadoInicial.usuarios)
   const [empresas, setEmpresas] = useState(() => carregarEmpresasIniciais())
   const [usuarioAtual, setUsuarioAtual] = useState(() => estadoInicial.usuarioAtual)
-  const [progressoCursos, setProgressoCursos] = useState(() => lerStorage('progressoCursos', {}))
   const [candidaturas, setCandidaturas] = useState(() => lerStorage('candidaturas', candidaturaInicial))
   const [vagasEmpresa, setVagasEmpresa] = useState(() => carregarVagasIniciais())
   const [candidatos, setCandidatos] = useState(() => carregarCandidatosIniciais())
@@ -267,18 +296,22 @@ export function AppProvider({ children }) {
 
   const setUsuariosPersistido = persistir('usuarios', setUsuarios)
   const setEmpresasPersistido = persistir('empresas', setEmpresas)
-  const setProgressoPersistido = persistir('progressoCursos', setProgressoCursos)
   const setCandidaturasPersistidas = persistir('candidaturas', setCandidaturas)
   const setVagasPersistidas = persistir('vagasEmpresa', setVagasEmpresa)
   const setCandidatosPersistidos = persistir('candidatos', setCandidatos)
 
   function login(email, senha) {
-    const aluno = usuarios.find((item) => item.email === email && item.senha === senha)
-    const empresa = empresas.find((item) => item.email === email && item.senha === senha)
+    const emailNormalizado = normalizarEmail(email)
+    const aluno = usuarios.find(
+      (item) => !ehContaMockLogin(item) && normalizarEmail(item.email) === emailNormalizado && item.senha === senha,
+    )
+    const empresa = empresas.find(
+      (item) => !ehContaMockLogin(item) && normalizarEmail(item.email) === emailNormalizado && item.senha === senha,
+    )
     const conta = aluno ? normalizarAluno(aluno) : empresa ? { ...empresa, tipo: 'empresa' } : null
 
     if (!conta) {
-      return { ok: false, mensagem: 'E-mail ou senha invalidos.' }
+      return { ok: false, mensagem: 'E-mail ou senha inválidos.' }
     }
 
     const contaAtualizada = conta
@@ -302,10 +335,15 @@ export function AppProvider({ children }) {
   }
 
   function cadastrarAluno(dados) {
+    if (emailJaExiste(dados.email, usuarios, empresas)) {
+      return { ok: false, mensagem: 'Este e-mail já está cadastrado.' }
+    }
+
     const novo = {
       ...dados,
       id: criarIdAluno(),
       tipo: 'aluno',
+      email: normalizarEmail(dados.email),
       foto: dados.nome
         .split(' ')
         .slice(0, 2)
@@ -322,12 +360,16 @@ export function AppProvider({ children }) {
     setUsuariosPersistido((lista) => [...lista, novo])
     setUsuarioAtual(novo)
     salvarStorage('usuarioAtual', novo)
-    return novo
+    return { ok: true, usuario: novo }
   }
 
   function cadastrarEmpresa(dados) {
+    if (emailJaExiste(dados.email, usuarios, empresas)) {
+      return { ok: false, mensagem: 'Este e-mail já está cadastrado.' }
+    }
+
     const nova = {
-      id: `empresa-${Date.now()}`,
+      id: criarIdEmpresa(),
       tipo: 'empresa',
       logo: dados.nome
         .split(' ')
@@ -341,11 +383,34 @@ export function AppProvider({ children }) {
       localizacao: dados.localizacao || 'Brasil',
       site: dados.site || 'https://riseup.dev',
       ...dados,
+      email: normalizarEmail(dados.email),
     }
     setEmpresasPersistido((lista) => [...lista, nova])
     setUsuarioAtual(nova)
     salvarStorage('usuarioAtual', nova)
-    return nova
+    return { ok: true, usuario: nova }
+  }
+
+  function redefinirSenha({ email, senha }) {
+    const emailNormalizado = normalizarEmail(email)
+    const aluno = usuarios.find((item) => !ehContaMockLogin(item) && normalizarEmail(item.email) === emailNormalizado)
+    const empresa = empresas.find((item) => !ehContaMockLogin(item) && normalizarEmail(item.email) === emailNormalizado)
+
+    if (!aluno && !empresa) {
+      return { ok: false, mensagem: 'Não encontramos uma conta cadastrada com este e-mail.' }
+    }
+
+    if (aluno) {
+      setUsuariosPersistido((lista) =>
+        lista.map((usuario) => (usuario.id === aluno.id ? { ...usuario, senha } : usuario)),
+      )
+    } else {
+      setEmpresasPersistido((lista) =>
+        lista.map((item) => (item.id === empresa.id ? { ...item, senha } : item)),
+      )
+    }
+
+    return { ok: true, mensagem: 'Senha atualizada. Você já pode entrar com a nova senha.' }
   }
 
   function salvarWizard(respostas) {
@@ -377,7 +442,22 @@ export function AppProvider({ children }) {
   }
 
   function alternarAula(aulaId) {
-    setProgressoPersistido((atual) => ({ ...atual, [aulaId]: !atual[aulaId] }))
+    if (!usuarioAtual || usuarioAtual.tipo !== 'aluno') return
+
+    const progressoAtual = usuarioAtual.progresso && typeof usuarioAtual.progresso === 'object'
+      ? usuarioAtual.progresso
+      : {}
+    const atualizado = normalizarAluno({
+      ...usuarioAtual,
+      progresso: {
+        ...progressoAtual,
+        [aulaId]: !progressoAtual[aulaId],
+      },
+    })
+
+    setUsuarioAtual(atualizado)
+    salvarStorage('usuarioAtual', atualizado)
+    setUsuariosPersistido((lista) => substituirAluno(lista, atualizado))
   }
 
   function candidatar(vagaId) {
@@ -405,6 +485,7 @@ export function AppProvider({ children }) {
               tecnologias: usuarioAtual.tecnologias,
               cursosConcluidos: usuarioAtual.cursosConcluidos,
               certificados: usuarioAtual.certificados,
+              progresso: usuarioAtual.progresso,
               respostasWizard: usuarioAtual.respostasWizard,
             }
           : null,
@@ -445,7 +526,6 @@ export function AppProvider({ children }) {
     setVagasPersistidas((lista) => [nova, ...lista])
     return nova
   }
-//n faço ideia :)
   function atualizarVaga(vagaId, dados) {
     const atualizada = {
       ...dados,
@@ -494,6 +574,7 @@ export function AppProvider({ children }) {
   }
 
   const respostasWizard = usuarioAtual?.tipo === 'aluno' ? usuarioAtual.respostasWizard || {} : {}
+  const progressoCursos = usuarioAtual?.tipo === 'aluno' ? usuarioAtual.progresso || {} : {}
 
   const valor = {
     usuarios,
@@ -508,6 +589,7 @@ export function AppProvider({ children }) {
     logout,
     cadastrarAluno,
     cadastrarEmpresa,
+    redefinirSenha,
     salvarWizard,
     pularWizard,
     alternarAula,

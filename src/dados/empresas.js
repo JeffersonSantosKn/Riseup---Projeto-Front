@@ -6,14 +6,12 @@ export const empresas = [
     id: 'empresa-1',
     nome: 'Avanade',
     nomeOficial: 'Avanade Brasil',
-    email: 'empresa@riseup.com',
-    senha: 'Empresa@123',
     logo: 'AV',
     logoUrl: avanadeLogo,
     capaUrl: avanadeHero,
     capa: '#f8fafc',
     descricao:
-      'A Avanade é a consultoria líder em soluções digitais inovadoras no ecossistema Microsoft. Nascida da união entre Accenture e Microsoft, unimos tecnologia de ponta, visão de negócios e experiência humana para criar o que é relevante para o amanhã. No Brasil, somos um dos principais pilares de transformação digital, entregando projetos que moldam o futuro de indústrias inteiras.',
+      'A Avanade é a consultoria líder em soluções digitais inovadoras no ecossistema Microsoft. Nascida da união entre Accenture e Microsoft, une tecnologia de ponta, visão de negócios e experiência humana para criar o que é relevante para o amanhã. No Brasil, atua como um dos principais pilares de transformação digital, entregando projetos que moldam o futuro de indústrias inteiras.',
     descricaoCurta:
       'Unimos tecnologia, inovação e talentos para criar soluções digitais com impacto real em empresas e pessoas.',
     setor: 'Consultoria de Tecnologia e Soluções Digitais',
@@ -51,8 +49,6 @@ export const empresas = [
   {
     id: 'empresa-2',
     nome: 'Nova Jornada Digital',
-    email: 'rh@novajornada.com',
-    senha: 'Empresa@123',
     logo: 'NJ',
     capa: 'linear-gradient(120deg, rgba(15, 23, 42, 0.95), rgba(99, 102, 241, 0.76))',
     descricao:
