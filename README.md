@@ -84,25 +84,15 @@ npm run preview
 
 Abre uma previa local da build.
 
-## Publicacao no GitHub Pages
 
-Este projeto sera publicado no **GitHub Pages**, sem Netlify, Vercel ou outro servico de deploy.
+## Publicação no GitHub Pages
+
+A publicação será feita pelos desenvolvedores do projeto. Depois do deploy, o avaliador/mentor acessará apenas o link final da plataforma no GitHub Pages.
 
 Antes de publicar:
 
-```bash
 npm run lint
 npm run build
-```
-
-No repositorio do GitHub:
-
-1. Entre em **Settings**.
-2. Abra **Pages**.
-3. Em **Build and deployment**, escolha **GitHub Actions** ou a branch/pasta configurada para Pages.
-4. Garanta que a pasta publicada seja a build final gerada em `dist`.
-
-Se usar uma action de GitHub Pages, o fluxo deve instalar dependencias, rodar `npm run build` e publicar `dist`.
 
 ## Dados e Persistencia
 
