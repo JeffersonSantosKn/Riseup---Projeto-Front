@@ -1,6 +1,7 @@
 import { ArrowRight } from 'lucide-react'
 import { TbBrandGithub } from 'react-icons/tb'
 import { Link } from 'react-router-dom'
+import { MentorLandingToast } from '../../componentes/interface/MentorLandingToast'
 import brunoAvatar from '../../ativos/imagens/equipe/bruno-v-m-silva.jpg'
 import eduardoAvatar from '../../ativos/imagens/equipe/eduardo-farias.jpg'
 import eltonAvatar from '../../ativos/imagens/equipe/elton-bezerra-da-silva.jpg'
@@ -60,7 +61,7 @@ const membrosEquipe = [
 export function LandingPage() {
   return (
     <div className="landing-udemy">
-      <section className="landing-udemy-hero">
+      <section className="landing-udemy-hero" id="hero" data-mentor-section="hero">
         <div className="landing-hero-copy">
           <span className="hero-label">Plataforma de carreira em TI</span>
           <h1>
@@ -100,7 +101,7 @@ export function LandingPage() {
         </aside>
       </section>
 
-      <section className="stats-bar">
+      <section className="stats-bar" data-mentor-section="vagas">
         <article>
           <strong>28+</strong>
           <span>cursos e trilhas</span>
@@ -119,7 +120,7 @@ export function LandingPage() {
         </article>
       </section>
 
-      <section className="landing-opportunity-band">
+      <section className="landing-opportunity-band" id="vagas" data-mentor-section="vagas">
         <div className="landing-opportunity-image">
           <img src={oportunidadesImg} alt="Pessoa segurando anotação sobre inteligência artificial" />
         </div>
@@ -178,7 +179,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section className="landing-section-udemy">
+      <section className="landing-section-udemy" id="como-funciona" data-mentor-section="como-funciona">
         <div className="section-heading">
           <span>Como funciona</span>
           <h2>Da transição à candidatura</h2>
@@ -214,7 +215,7 @@ export function LandingPage() {
         </article>
       </section>
 
-      <section className="landing-about">
+      <section className="landing-about" id="quem-somos" data-mentor-section="quem-somos">
         <div>
           <h2>Quem somos</h2>
           <p>
@@ -243,7 +244,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section className="landing-team" aria-labelledby="landing-team-title">
+      <section className="landing-team" aria-labelledby="landing-team-title" data-mentor-section="quem-somos">
         <div className="landing-team-heading">
           <span>Nossa equipe</span>
           <h2 id="landing-team-title">As pessoas por trás da Trilum Conecta</h2>
@@ -285,6 +286,8 @@ export function LandingPage() {
           Criar conta grátis <ArrowRight size={16} />
         </Link>
       </section>
+
+      <MentorLandingToast />
     </div>
   )
 }
