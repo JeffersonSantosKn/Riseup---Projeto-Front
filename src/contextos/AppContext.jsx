@@ -47,11 +47,35 @@ function sincronizarEmpresaDemo(empresa) {
   }
 }
 
+function sincronizarEmpresaBase(empresa) {
+  const base = empresasBase.find((item) => item.id === empresa?.id)
+  if (!base) return empresa
+
+  return {
+    ...base,
+    ...empresa,
+    logo: empresa.logo || base.logo,
+    logoUrl: empresa.logoUrl || base.logoUrl || '',
+    capaUrl: empresa.capaUrl || base.capaUrl || '',
+    capa: empresa.capa || base.capa || '',
+    especialidades: Array.isArray(empresa.especialidades) && empresa.especialidades.length
+      ? empresa.especialidades
+      : base.especialidades || [],
+    stackDetalhes: Array.isArray(empresa.stackDetalhes) && empresa.stackDetalhes.length
+      ? empresa.stackDetalhes
+      : base.stackDetalhes || [],
+    beneficios: Array.isArray(empresa.beneficios) && empresa.beneficios.length ? empresa.beneficios : base.beneficios || [],
+  }
+}
+
 function normalizarAluno(usuario) {
   if (!usuario || usuario.tipo !== 'aluno') return usuario
 
   const respostasWizard = usuario.respostasWizard && typeof usuario.respostasWizard === 'object' ? usuario.respostasWizard : {}
   const base = usuariosBase.find((aluno) => aluno.id === usuario.id)
+  const perfilProfissionalBase = usuario.perfilProfissional && typeof usuario.perfilProfissional === 'object'
+    ? usuario.perfilProfissional
+    : {}
 
   return {
     ...usuario,
@@ -62,6 +86,20 @@ function normalizarAluno(usuario) {
     cursosConcluidos: Array.isArray(usuario.cursosConcluidos) ? usuario.cursosConcluidos : [],
     certificados: Array.isArray(usuario.certificados) ? usuario.certificados : [],
     progresso: usuario.progresso && typeof usuario.progresso === 'object' ? usuario.progresso : {},
+    curriculo: usuario.curriculo && typeof usuario.curriculo === 'object' ? usuario.curriculo : {},
+    perfilProfissional: {
+      telefone: perfilProfissionalBase.telefone || '',
+      linkedin: perfilProfissionalBase.linkedin || '',
+      github: perfilProfissionalBase.github || '',
+      portfolio: perfilProfissionalBase.portfolio || '',
+      tecnologiasComNivel: perfilProfissionalBase.tecnologiasComNivel || '',
+      idiomas: perfilProfissionalBase.idiomas || '',
+      projetos: perfilProfissionalBase.projetos || '',
+      formacoes: perfilProfissionalBase.formacoes || '',
+      experiencias: perfilProfissionalBase.experiencias || '',
+      certificadosExternos: perfilProfissionalBase.certificadosExternos || '',
+      certificadosExternosArquivos: Array.isArray(perfilProfissionalBase.certificadosExternosArquivos) ? perfilProfissionalBase.certificadosExternosArquivos : [],
+    },
   }
 }
 
@@ -138,9 +176,15 @@ function carregarEmpresasIniciais() {
 
   if (!lerStorage(CHAVE_AVANADE_EMPRESA, false)) {
     const temEmpresaDemo = salvas.some((empresa) => empresa.id === DEMO_EMPRESA_ID)
-    const listaAtualizada = temEmpresaDemo
+    const listaComDemo = temEmpresaDemo
       ? salvas.map((empresa) => sincronizarEmpresaDemo(empresa))
       : [empresaDemoBase(), ...salvas].filter(Boolean)
+    const listaComDemoNormalizada = listaComDemo.map((empresa) => sincronizarEmpresaBase(sincronizarEmpresaDemo(empresa)))
+    const idsAtualizados = new Set(listaComDemoNormalizada.map((empresa) => empresa.id))
+    const listaAtualizada = [
+      ...listaComDemoNormalizada,
+      ...empresasBase.filter((empresa) => !idsAtualizados.has(empresa.id)),
+    ]
 
     salvarStorage('empresas', listaAtualizada)
     salvarStorage(CHAVE_AVANADE_EMPRESA, true)
@@ -148,9 +192,13 @@ function carregarEmpresasIniciais() {
   }
 
   const temEmpresaDemo = salvas.some((empresa) => empresa.id === DEMO_EMPRESA_ID)
-  const listaFinal = temEmpresaDemo ? salvas : [empresaDemoBase(), ...salvas].filter(Boolean)
+  const salvasComDemo = temEmpresaDemo ? salvas : [empresaDemoBase(), ...salvas].filter(Boolean)
+  const salvasNormalizadas = salvasComDemo.map((empresa) => sincronizarEmpresaBase(sincronizarEmpresaDemo(empresa)))
+  const idsSalvos = new Set(salvasNormalizadas.map((empresa) => empresa.id))
+  const empresasBaseNovas = empresasBase.filter((empresa) => !idsSalvos.has(empresa.id))
+  const listaFinal = [...salvasNormalizadas, ...empresasBaseNovas]
 
-  if (!temEmpresaDemo) {
+  if (!temEmpresaDemo || empresasBaseNovas.length || JSON.stringify(listaFinal) !== JSON.stringify(salvas)) {
     salvarStorage('empresas', listaFinal)
   }
 
@@ -356,6 +404,8 @@ export function AppProvider({ children }) {
       cursosConcluidos: [],
       certificados: [],
       progresso: {},
+      curriculo: {},
+      perfilProfissional: {},
     }
     setUsuariosPersistido((lista) => [...lista, novo])
     setUsuarioAtual(novo)
@@ -379,9 +429,9 @@ export function AppProvider({ children }) {
         .toUpperCase(),
       capa:
         'linear-gradient(120deg, rgba(15, 23, 42, 0.95), rgba(20, 184, 166, 0.72))',
-      descricao: dados.descricao || 'Empresa parceira da Trilum Conecta em busca de talentos em formação.',
+      descricao: dados.descricao || '',
       localizacao: dados.localizacao || 'Brasil',
-      site: dados.site || 'https://riseup.dev',
+      site: dados.site || '',
       ...dados,
       email: normalizarEmail(dados.email),
     }
