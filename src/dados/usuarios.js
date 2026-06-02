@@ -14,6 +14,8 @@ export const usuarios = [
     id: 'aluno-1',
     tipo: 'aluno',
     nome: 'Jefferson Santos',
+    email: 'jefferson@riseup.demo',
+    senha: 'Jefferson@123',
     foto: 'JS',
     fotoUrl: jeffersonSantosPerfil,
     capaUrl: macacoPhpCapa,

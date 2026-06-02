@@ -9,6 +9,8 @@ export const empresas = [
   {
     id: 'empresa-1',
     nome: 'Avanade',
+    email: 'avanade@riseup.demo',
+    senha: 'Avanade@123',
     nomeOficial: 'Avanade Brasil',
     logo: 'AV',
     logoUrl: avanadeLogo,

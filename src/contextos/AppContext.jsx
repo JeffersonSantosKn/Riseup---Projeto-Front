@@ -11,7 +11,7 @@ const candidaturaInicial = []
 
 const DEMO_ALUNO_ID = 'aluno-1'
 const DEMO_EMPRESA_ID = 'empresa-1'
-const CONTAS_MOCK_LOGIN = new Set([DEMO_ALUNO_ID, DEMO_EMPRESA_ID, 'empresa-2'])
+const CONTAS_MOCK_LOGIN = new Set(['empresa-2'])
 const CHAVE_RESET_WIZARD_DEMO = 'demoWizardResetado'
 const CHAVE_DEMO_ALUNO_PERFIL = 'demoAlunoPerfilAtualizadoV1'
 const CHAVE_AVANADE_EMPRESA = 'avanadeEmpresaAtualizadaV4'
@@ -237,12 +237,19 @@ function carregarCandidatosIniciais() {
 
 function carregarEstadoInicial() {
   const usuariosSalvos = lerStorage('usuarios', null)
-  let usuarios = normalizarUsuarios(Array.isArray(usuariosSalvos) ? usuariosSalvos : []).filter(
+  const usuariosSalvosNormalizados = Array.isArray(usuariosSalvos) ? usuariosSalvos : []
+  const usuariosBaseComSalvos = usuariosBase.map((usuarioBase) => {
+    const usuarioSalvo = usuariosSalvosNormalizados.find((usuario) => usuario.id === usuarioBase.id)
+    return usuarioSalvo ? { ...usuarioBase, ...usuarioSalvo } : usuarioBase
+  })
+  const idsBase = new Set(usuariosBaseComSalvos.map((usuario) => usuario.id))
+  const usuariosCustomizados = usuariosSalvosNormalizados.filter((usuario) => !idsBase.has(usuario.id))
+  let usuarios = normalizarUsuarios([...usuariosBaseComSalvos, ...usuariosCustomizados]).filter(
     (usuario) => !ehContaMockLogin(usuario),
   )
   let usuarioAtual = lerStorage('usuarioAtual', null)
 
-  if (Array.isArray(usuariosSalvos) && usuarios.length !== usuariosSalvos.length) {
+  if (!Array.isArray(usuariosSalvos) || JSON.stringify(usuarios) !== JSON.stringify(usuariosSalvos)) {
     salvarStorage('usuarios', usuarios)
   }
 
