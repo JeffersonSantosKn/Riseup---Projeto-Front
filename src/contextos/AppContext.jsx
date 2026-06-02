@@ -1,22 +1,31 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState } from 'react'
 import { empresas as empresasBase } from '../dados/empresas'
-import { candidatosMock, vagas as vagasBase } from '../dados/vagas'
+import { candidatosMock, criarCandidatoDemoEmpresa, criarVagaDemoEmpresa, vagas as vagasBase } from '../dados/vagas'
 import { usuarios as usuariosBase } from '../dados/usuarios'
 import { lerStorage, removerStorage, salvarStorage } from '../servicos/storage'
 
 const AppContext = createContext(null)
 
-const candidaturaInicial = []
+const candidaturaInicial = [
+  {
+    id: 'cand-app-demo-jefferson-avanade',
+    vagaId: 'vaga-1',
+    alunoId: 'aluno-1',
+    status: 'Candidatura enviada',
+    atualizadoEm: '01/06/2026 09:00:00',
+  },
+]
 
 const DEMO_ALUNO_ID = 'aluno-1'
 const DEMO_EMPRESA_ID = 'empresa-1'
 const CONTAS_MOCK_LOGIN = new Set(['empresa-2'])
-const CHAVE_RESET_WIZARD_DEMO = 'demoWizardResetado'
+const CHAVE_RESET_WIZARD_DEMO = 'demoWizardResetadoV2'
 const CHAVE_DEMO_ALUNO_PERFIL = 'demoAlunoPerfilAtualizadoV1'
 const CHAVE_AVANADE_EMPRESA = 'avanadeEmpresaAtualizadaV4'
-const CHAVE_AVANADE_VAGAS = 'avanadeVagasAtualizadasV4'
-const CHAVE_AVANADE_CANDIDATOS = 'avanadeCandidatosAtualizadosV2'
+const CHAVE_AVANADE_VAGAS = 'avanadeVagasAtualizadasV5'
+const CHAVE_AVANADE_CANDIDATOS = 'avanadeCandidatosAtualizadosV3'
+const CHAVE_DEMO_CANDIDATURAS = 'demoCandidaturasAtualizadasV1'
 const VAGAS_MOCK_ANTIGAS = new Set(['vaga-2', 'vaga-3', 'vaga-4', 'vaga-5'])
 const CANDIDATOS_MOCK_ANTIGOS = new Set([
   'cand-3',
@@ -235,6 +244,25 @@ function carregarCandidatosIniciais() {
   return normalizados
 }
 
+function carregarCandidaturasIniciais() {
+  const salvas = lerStorage('candidaturas', null)
+  if (!Array.isArray(salvas)) {
+    salvarStorage(CHAVE_DEMO_CANDIDATURAS, true)
+    return candidaturaInicial
+  }
+
+  if (!lerStorage(CHAVE_DEMO_CANDIDATURAS, false)) {
+    const existentes = new Set(salvas.map((candidatura) => candidatura.id))
+    const novas = candidaturaInicial.filter((candidatura) => !existentes.has(candidatura.id))
+    const atualizadas = [...salvas, ...novas]
+    salvarStorage('candidaturas', atualizadas)
+    salvarStorage(CHAVE_DEMO_CANDIDATURAS, true)
+    return atualizadas
+  }
+
+  return salvas
+}
+
 function carregarEstadoInicial() {
   const usuariosSalvos = lerStorage('usuarios', null)
   const usuariosSalvosNormalizados = Array.isArray(usuariosSalvos) ? usuariosSalvos : []
@@ -335,7 +363,7 @@ export function AppProvider({ children }) {
   const [usuarios, setUsuarios] = useState(() => estadoInicial.usuarios)
   const [empresas, setEmpresas] = useState(() => carregarEmpresasIniciais())
   const [usuarioAtual, setUsuarioAtual] = useState(() => estadoInicial.usuarioAtual)
-  const [candidaturas, setCandidaturas] = useState(() => lerStorage('candidaturas', candidaturaInicial))
+  const [candidaturas, setCandidaturas] = useState(() => carregarCandidaturasIniciais())
   const [vagasEmpresa, setVagasEmpresa] = useState(() => carregarVagasIniciais())
   const [candidatos, setCandidatos] = useState(() => carregarCandidatosIniciais())
 
@@ -380,7 +408,12 @@ export function AppProvider({ children }) {
     return {
       ok: true,
       usuario: contaAtualizada,
-      redirecionarPara: contaAtualizada.tipo === 'empresa' ? '/empresa/painel' : '/aluno/painel',
+      redirecionarPara:
+        contaAtualizada.tipo === 'empresa'
+          ? '/empresa/painel'
+          : contaAtualizada.wizardConcluido
+            ? '/aluno/painel'
+            : '/aluno/questionario',
     }
   }
 
@@ -442,7 +475,12 @@ export function AppProvider({ children }) {
       ...dados,
       email: normalizarEmail(dados.email),
     }
+    const vagaDemo = criarVagaDemoEmpresa(nova.id)
+    const candidatoDemo = criarCandidatoDemoEmpresa(vagaDemo.id)
+
     setEmpresasPersistido((lista) => [...lista, nova])
+    setVagasPersistidas((lista) => [vagaDemo, ...lista])
+    setCandidatosPersistidos((lista) => [candidatoDemo, ...lista])
     setUsuarioAtual(nova)
     salvarStorage('usuarioAtual', nova)
     return { ok: true, usuario: nova }

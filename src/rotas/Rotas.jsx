@@ -28,6 +28,17 @@ function Protegida({ children, tipo }) {
   return children
 }
 
+function AlunoIndexRedirect() {
+  const { usuarioAtual } = useApp()
+  return <Navigate to={usuarioAtual?.wizardConcluido ? '/aluno/painel' : '/aluno/questionario'} replace />
+}
+
+function RequerWizardAluno({ children }) {
+  const { usuarioAtual } = useApp()
+  if (!usuarioAtual?.wizardConcluido) return <Navigate to="/aluno/questionario" replace />
+  return children
+}
+
 export function Rotas() {
   const apresentacaoAtiva = modoApresentacao.ativo
 
@@ -48,24 +59,24 @@ export function Rotas() {
           </Protegida>
         }
       >
-        <Route index element={<Navigate to="/aluno/painel" replace />} />
+        <Route index element={<AlunoIndexRedirect />} />
         {apresentacaoAtiva ? (
           <>
             <Route path="questionario" element={<Questionario />} />
-            <Route path="painel" element={<PainelAluno />} />
-            <Route path="cursos" element={<Cursos />} />
-            <Route path="*" element={<Navigate to="/aluno/painel" replace />} />
+            <Route path="painel" element={<RequerWizardAluno><PainelAluno /></RequerWizardAluno>} />
+            <Route path="cursos" element={<RequerWizardAluno><Cursos /></RequerWizardAluno>} />
+            <Route path="*" element={<AlunoIndexRedirect />} />
           </>
         ) : (
           <>
             <Route path="questionario" element={<Questionario />} />
-            <Route path="painel" element={<PainelAluno />} />
-            <Route path="cursos" element={<Cursos />} />
-            <Route path="cursos/:trilhaId" element={<DetalheCurso />} />
-            <Route path="cursos/:trilhaId/aula/:aulaId" element={<PlayerCurso />} />
-            <Route path="vagas" element={<VagasAluno />} />
-            <Route path="vagas/:vagaId" element={<DetalheVaga />} />
-            <Route path="perfil" element={<PerfilAluno />} />
+            <Route path="painel" element={<RequerWizardAluno><PainelAluno /></RequerWizardAluno>} />
+            <Route path="cursos" element={<RequerWizardAluno><Cursos /></RequerWizardAluno>} />
+            <Route path="cursos/:trilhaId" element={<RequerWizardAluno><DetalheCurso /></RequerWizardAluno>} />
+            <Route path="cursos/:trilhaId/aula/:aulaId" element={<RequerWizardAluno><PlayerCurso /></RequerWizardAluno>} />
+            <Route path="vagas" element={<RequerWizardAluno><VagasAluno /></RequerWizardAluno>} />
+            <Route path="vagas/:vagaId" element={<RequerWizardAluno><DetalheVaga /></RequerWizardAluno>} />
+            <Route path="perfil" element={<RequerWizardAluno><PerfilAluno /></RequerWizardAluno>} />
           </>
         )}
       </Route>

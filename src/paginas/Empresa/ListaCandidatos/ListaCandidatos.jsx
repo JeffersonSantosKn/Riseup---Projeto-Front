@@ -330,6 +330,7 @@ function montarDadosCurriculoCandidato(candidato = {}) {
     localizacao: textoOuPadrao(candidato.localizacao, 'Brasil'),
     linkedin: textoOuPadrao(curriculo.linkedin, perfilProfissional.linkedin),
     github: textoOuPadrao(curriculo.github, perfilProfissional.github),
+    instagram: textoOuPadrao(curriculo.instagram, perfilProfissional.instagram),
     portfolio: textoOuPadrao(curriculo.portfolio, perfilProfissional.portfolio),
     fotoUrl: textoOuPadrao(curriculo.fotoUrl, candidato.fotoUrl),
     objetivo: textoOuPadrao(
@@ -355,12 +356,13 @@ function montarDadosCurriculoCandidato(candidato = {}) {
 function htmlCurriculoCandidato(candidato) {
   const dados = montarDadosCurriculoCandidato(candidato)
   const contatos = [
-    dados.email && `E-mail: ${dados.email}`,
-    dados.telefone && `Telefone: ${dados.telefone}`,
-    dados.localizacao && `Local: ${dados.localizacao}`,
-    dados.linkedin && `LinkedIn: ${dados.linkedin}`,
-    dados.github && `GitHub: ${dados.github}`,
-    dados.portfolio && `Portfolio: ${dados.portfolio}`,
+    dados.email && { rotulo: 'E-mail', valor: dados.email, href: `mailto:${dados.email}` },
+    dados.telefone && { rotulo: 'Telefone', valor: dados.telefone, href: `tel:${String(dados.telefone).replace(/\D/g, '')}` },
+    dados.localizacao && { rotulo: 'Local', valor: dados.localizacao },
+    dados.linkedin && { rotulo: 'LinkedIn', valor: 'LinkedIn', href: dados.linkedin },
+    dados.github && { rotulo: 'GitHub', valor: 'GitHub', href: dados.github },
+    dados.instagram && { rotulo: 'Instagram', valor: 'Instagram', href: dados.instagram },
+    dados.portfolio && { rotulo: 'Portfolio', valor: 'Portfolio', href: dados.portfolio },
   ].filter(Boolean)
   const formacao = dados.formacoes.length
     ? dados.formacoes
@@ -384,6 +386,7 @@ function htmlCurriculoCandidato(candidato) {
     h1 { margin: 0; font-size: 30pt; line-height: .95; text-transform: uppercase; letter-spacing: 0; }
     .title { margin: 7mm 0 0; max-width: 70mm; font-size: 11pt; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
     .contacts { display: grid; gap: 4mm; margin: 0; padding: 0; list-style: none; font-size: 9.6pt; font-weight: 700; overflow-wrap: anywhere; }
+    .contacts a { color: #111827; font-weight: 800; text-decoration: none; }
     .intro { margin: 13mm 0 0; font-size: 10.2pt; line-height: 1.55; }
     .intro strong { display: block; margin-top: 4mm; }
     .divider { border: 0; border-top: 1.6px solid #111827; margin: 12mm 0; }
@@ -408,7 +411,7 @@ function htmlCurriculoCandidato(candidato) {
           <p class="title">${escaparHtml(dados.titulo)}</p>
         </div>
       </div>
-      <ul class="contacts">${contatos.map((item) => `<li>${escaparHtml(item)}</li>`).join('')}</ul>
+      <ul class="contacts">${contatos.map((item) => `<li>${escaparHtml(item.rotulo)}: ${item.href ? `<a href="${escaparHtml(item.href)}" target="_blank" rel="noreferrer">${escaparHtml(item.valor)}</a>` : escaparHtml(item.valor)}</li>`).join('')}</ul>
     </header>
 
     <section class="intro">
@@ -500,6 +503,16 @@ function calcularCompatibilidade(candidato, vaga, empresa) {
   return { nivel: 'inicial', rotulo: 'Compatibilidade inicial', motivos: [] }
 }
 
+function removerCandidatosDuplicados(lista = []) {
+  const vistos = new Set()
+  return lista.filter((candidato) => {
+    const chave = candidato.alunoId ? `aluno:${candidato.alunoId}` : `candidato:${candidato.id}`
+    if (vistos.has(chave)) return false
+    vistos.add(chave)
+    return true
+  })
+}
+
 function stackOptions(vaga, empresa) {
   return [...new Set([...(vaga?.tags || []), ...(empresa?.especialidades || [])])]
     .map((item) => String(item).trim())
@@ -529,7 +542,7 @@ export function ListaCandidatos() {
           candidatura.perfilSnapshot?.progresso || {},
         ),
       )
-  const candidatosDaVaga = [...mockados, ...candidatosReais].map((candidato) => ({
+  const candidatosDaVaga = removerCandidatosDuplicados([...mockados, ...candidatosReais]).map((candidato) => ({
     ...candidato,
     compatibilidade: calcularCompatibilidade(candidato, vaga, usuarioAtual),
   }))

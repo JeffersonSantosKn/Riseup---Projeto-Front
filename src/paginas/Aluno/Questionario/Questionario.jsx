@@ -11,7 +11,7 @@ const perguntasPorEtapa = perguntasWizard.reduce((etapas, pergunta, indice) => {
 }, [])
 
 export function Questionario() {
-  const { usuarioAtual, respostasWizard, salvarWizard, pularWizard } = useApp()
+  const { usuarioAtual, respostasWizard, salvarWizard } = useApp()
   const chaveUsuario = usuarioAtual?.id || 'sem-usuario'
 
   return (
@@ -19,12 +19,11 @@ export function Questionario() {
       key={chaveUsuario}
       respostasIniciais={respostasWizard}
       salvarWizard={salvarWizard}
-      pularWizard={pularWizard}
     />
   )
 }
 
-function QuestionarioFormulario({ respostasIniciais, salvarWizard, pularWizard }) {
+function QuestionarioFormulario({ respostasIniciais, salvarWizard }) {
   const navigate = useNavigate()
   const [etapa, setEtapa] = useState(0)
   const [respostas, setRespostas] = useState(respostasIniciais)
@@ -44,11 +43,6 @@ function QuestionarioFormulario({ respostasIniciais, salvarWizard, pularWizard }
       return
     }
     setEtapa((atual) => atual + 1)
-  }
-
-  function pular() {
-    pularWizard()
-    navigate('/aluno/painel')
   }
 
   return (
@@ -92,9 +86,6 @@ function QuestionarioFormulario({ respostasIniciais, salvarWizard, pularWizard }
       <div className="linha-acoes fixa">
         <Botao variant="secondary" disabled={etapa === 0} onClick={() => setEtapa((atual) => atual - 1)}>
           <ArrowLeft size={18} /> Voltar
-        </Botao>
-        <Botao variant="secondary" onClick={pular}>
-          Pular por enquanto
         </Botao>
         <Botao disabled={!podeAvancar} onClick={avancar}>
           {etapa === perguntasPorEtapa.length - 1 ? 'Finalizar' : 'Próximo'} <ArrowRight size={18} />

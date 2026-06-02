@@ -14,6 +14,20 @@ https://jeffersonsantoskn.github.io/Riseup---Projeto-Front/#/
 
 Use o link com `#/`, pois o projeto usa `HashRouter` para funcionar corretamente no GitHub Pages.
 
+Contas prontas para apresentacao:
+
+```txt
+Empresa Avanade
+E-mail: avanade@riseup.demo
+Senha: Avanade@123
+
+Aluno Jefferson Santos
+E-mail: jefferson@riseup.demo
+Senha: Jefferson@123
+```
+
+Observacao: Jefferson Santos ja aparece como candidato em uma vaga da Avanade, para permitir testar rapidamente visualizacao de perfil e exportacao de curriculo pelo lado da empresa.
+
 ## Funcionalidades
 
 - Landing page institucional com apresentacao da plataforma, equipe e mentor contextual.
@@ -50,9 +64,11 @@ Use o link com `#/`, pois o projeto usa `HashRouter` para funcionar corretamente
 1. Crie ou acesse uma conta de empresa.
 2. Confira o aviso do mentor para completar o perfil.
 3. Edite o perfil institucional da empresa.
-4. Crie uma vaga e confirme que ela aparece no painel/listagem.
-5. Abra a lista de candidatos.
-6. Clique em um candidato e teste a exportacao do curriculo atualizado.
+4. Use a vaga demo criada automaticamente no cadastro ou crie uma nova vaga.
+5. Abra a lista de candidatos da vaga demo.
+6. Clique em Rafael Souza ou Jefferson Santos e teste a exportacao do curriculo atualizado.
+
+Ao cadastrar uma nova empresa, a plataforma cria automaticamente uma vaga demo editavel e um candidato ficticio com perfil completo. Isso permite testar gerenciar vaga, ver perfil de candidato, alterar status e exportar curriculo sem precisar cadastrar um aluno antes.
 
 ## Tecnologias
 

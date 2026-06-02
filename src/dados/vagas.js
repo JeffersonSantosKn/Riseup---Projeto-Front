@@ -1,3 +1,6 @@
+import jeffersonSantosPerfil from '../ativos/imagens/jefferson-santos-perfil.jpg'
+import rafaelSouzaPerfil from '../ativos/imagens/rafael-souza-perfil.webp'
+
 export const vagas = [
   {
     id: 'vaga-1',
@@ -10,7 +13,7 @@ export const vagas = [
     salario: 'R$ 2.800 - R$ 3.600',
     status: 'ativa',
     publicadaEm: '2026-05-26',
-    candidatos: 1,
+    candidatos: 2,
     tags: ['react', 'typescript', 'frontend', 'fluent-ui', 'azure', 'acessibilidade'],
     descricao:
       'No time de Front-end da Avanade, seu desafio será transformar designs complexos em interfaces fluidas, acessíveis e performáticas dentro do ecossistema Microsoft.',
@@ -215,6 +218,47 @@ export const vagas = [
   },
 ]
 
+export function criarVagaDemoEmpresa(empresaId) {
+  return {
+    id: `vaga-demo-${empresaId}`,
+    empresaId,
+    titulo: 'Analista de Suporte Tecnico Junior',
+    nivel: 'Junior',
+    tipo: 'CLT',
+    modalidade: 'Hibrido',
+    localizacao: 'Recife, PE',
+    salario: 'R$ 2.200 - R$ 3.000',
+    status: 'ativa',
+    publicadaEm: new Date().toISOString().slice(0, 10),
+    candidatos: 1,
+    tags: ['suporte', 'redes', 'microsoft-365', 'windows', 'linux'],
+    descricao:
+      'Vaga demo criada automaticamente para a empresa testar gerenciamento, edicao, candidatos, perfil e exportacao de curriculo.',
+    requisitos: [
+      'Boa comunicacao para atendimento a usuarios',
+      'Nocoes de Windows, redes e Microsoft 365',
+      'Organizacao para registrar chamados e documentar solucoes',
+      'Interesse em aprender cloud e seguranca',
+    ],
+    atividades: [
+      'Atender chamados de primeiro nivel',
+      'Apoiar configuracao de acessos e estacoes',
+      'Documentar problemas recorrentes',
+      'Acompanhar melhorias no processo de suporte',
+    ],
+  }
+}
+
+export function criarCandidatoDemoEmpresa(vagaId) {
+  const base = candidatosMock.find((candidato) => candidato.id === 'cand-2')
+  return {
+    ...base,
+    id: `cand-demo-${vagaId}`,
+    vagaId,
+    status: 'Em andamento',
+  }
+}
+
 export const candidatosMock = [
   {
     id: 'cand-1',
@@ -228,6 +272,46 @@ export const candidatosMock = [
     tecnologias: ['React', 'JavaScript', 'HTML', 'CSS'],
   },
   {
+    id: 'cand-jefferson-avanade',
+    vagaId: 'vaga-1',
+    alunoId: 'aluno-1',
+    nome: 'Jefferson Santos',
+    status: 'Candidatura enviada',
+    cargo: 'Estudante de tecnologia',
+    localizacao: 'Recife, PE',
+    email: 'jefferson@riseup.demo',
+    foto: 'JS',
+    fotoUrl: jeffersonSantosPerfil,
+    bio:
+      'Desenvolvedor Backend em transicao de carreira, focado na construcao de APIs robustas e escalaveis com Java e Spring Boot. Possui dominio solido nos fundamentos de HTTP e arquitetura REST, Clean Code e versionamento com Git/GitHub.',
+    cursos: ['Front-end com HTML, CSS e JavaScript', 'Git e GitHub para Projetos', 'LinkedIn para Primeira Vaga'],
+    cursosConcluidos: ['Front-end com HTML, CSS e JavaScript', 'Git e GitHub para Projetos'],
+    certificados: ['Front-end com HTML, CSS e JavaScript', 'Git e GitHub para Projetos'],
+    tecnologias: ['Java', 'Spring Boot', 'APIs REST', 'SQL', 'Git/GitHub', 'JavaScript'],
+    perfilProfissional: {
+      telefone: '81992844840',
+      linkedin: 'https://www.linkedin.com/in/jefferson-santos-dev',
+      github: 'https://github.com/jeffersonsantoskn',
+      portfolio: 'https://jeffersonsantoskn.github.io',
+      tecnologiasComNivel: 'Java - basico\nSpring Boot - estudando\nAPIs REST - basico\nSQL - basico\nGit/GitHub - intermediario\nJavaScript - basico',
+      idiomas: 'Portugues - nativo\nIngles - basico',
+      projetos:
+        'API de cadastro de alunos - Java e Spring Boot - CRUD com boas praticas\nPortfolio pessoal - HTML, CSS e JavaScript - publicado no GitHub Pages\nSistema de vagas Trilum - React - simulacao de candidaturas e curriculos',
+      formacoes: 'Analise e Desenvolvimento de Sistemas - UNIT - em andamento',
+      experiencias:
+        'Assistente administrativo - organizacao de documentos, atendimento e apoio operacional\nProjeto academico - desenvolvimento de API REST com Java e banco de dados',
+      certificadosExternos: 'Curso em Video Python - 40h\nGit e GitHub para projetos - certificado externo',
+      certificadosExternosArquivos: [
+        { id: 'jefferson-cert-python', nome: 'certificado-python-jefferson.pdf', tipo: 'application/pdf', tamanho: 245760 },
+      ],
+    },
+    curriculo: {
+      titulo: 'Estudante de tecnologia',
+      objetivo: 'Conquistar uma primeira oportunidade em TI, aplicando meus estudos e evoluindo com projetos reais.',
+      competencias: 'Comunicacao\nOrganizacao\nAprendizado continuo\nResolucao de problemas',
+    },
+  },
+  {
     id: 'cand-2',
     vagaId: 'vaga-6',
     nome: 'Rafael Souza',
@@ -237,5 +321,45 @@ export const candidatosMock = [
     bio: 'Experiência com atendimento de usuários, hardware, redes e documentação técnica.',
     cursos: ['Informática Essencial', 'Git e GitHub para Projetos'],
     tecnologias: ['Suporte', 'Redes', 'Windows', 'Microsoft 365'],
+    ...{
+    cargo: 'Tecnico de suporte',
+    email: 'rafael.souza.demo@trilum.local',
+    foto: 'RS',
+    fotoUrl: rafaelSouzaPerfil,
+    bio:
+      'Tecnico de suporte com experiencia em atendimento a usuarios, diagnostico de hardware, redes, Microsoft 365 e documentacao tecnica. Busca crescer para suporte cloud e administracao de ambientes corporativos.',
+    cursos: ['Informatica Essencial', 'Git e GitHub para Projetos', 'Linux para Iniciantes', 'Seguranca para Projetos Web'],
+    cursosConcluidos: ['Informatica Essencial', 'Git e GitHub para Projetos'],
+    certificados: ['Informatica Essencial', 'Git e GitHub para Projetos'],
+    tecnologias: ['Suporte', 'Redes', 'Windows', 'Microsoft 365', 'Linux', 'Git/GitHub', 'Azure Fundamentals'],
+    perfilProfissional: {
+      telefone: '81988776655',
+      linkedin: 'https://www.linkedin.com/in/rafael-souza-suporte',
+      github: 'https://github.com/rafaelsouza-support',
+      instagram: 'https://www.instagram.com/rafaelsouza.tech',
+      portfolio: 'https://rafaelsouza-support.github.io',
+      tecnologiasComNivel:
+        'Suporte tecnico - intermediario\nRedes TCP/IP - basico\nWindows - intermediario\nMicrosoft 365 - basico\nLinux - basico\nGit/GitHub - basico\nAzure Fundamentals - estudando',
+      idiomas: 'Portugues - nativo\nIngles - intermediario\nEspanhol - basico',
+      projetos:
+        'Inventario de chamados em planilha automatizada - Excel e Power Query - reducao de retrabalho\nLaboratorio domestico de redes - roteamento, DNS e documentacao de troubleshooting\nBase de conhecimento de suporte - artigos para problemas recorrentes de usuarios',
+      formacoes:
+        'Tecnico em Informatica - SENAC PE - 2024\nAnalise e Desenvolvimento de Sistemas - Faculdade ficticia Recife Tech - em andamento',
+      experiencias:
+        'Tecnico de suporte junior - HelpDesk Recife - 2024/2026 - atendimento N1, triagem de chamados e suporte Microsoft 365\nEstagio em infraestrutura - Recife Digital Lab - 2023/2024 - configuracao de estacoes, redes e documentacao',
+      certificadosExternos:
+        'Microsoft 365 Fundamentals - preparatorio\nCurso de Redes de Computadores - 40h\nLinux Essentials - curso livre',
+      certificadosExternosArquivos: [
+        { id: 'rafael-cert-redes', nome: 'certificado-redes-rafael.pdf', tipo: 'application/pdf', tamanho: 312000 },
+        { id: 'rafael-cert-linux', nome: 'linux-essentials-rafael.pdf', tipo: 'application/pdf', tamanho: 286000 },
+      ],
+    },
+    curriculo: {
+      titulo: 'Tecnico de suporte junior',
+      objetivo:
+        'Atuar em suporte tecnico e infraestrutura, aplicando boas praticas de atendimento, documentacao e diagnostico para evoluir em ambientes cloud.',
+      competencias: 'Comunicacao clara\nOrganizacao de chamados\nEmpatia com usuarios\nAprendizado continuo\nResolucao de problemas',
+    },
+    },
   },
 ]

@@ -89,7 +89,7 @@ export function Login() {
       return
     }
 
-    navigate(resposta.usuario.tipo === 'empresa' ? '/empresa/painel' : '/aluno/painel')
+    navigate(resposta.redirecionarPara)
   }
 
   function enviarRecuperacao(evento) {

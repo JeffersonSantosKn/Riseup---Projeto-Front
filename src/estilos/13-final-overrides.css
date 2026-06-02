@@ -1205,7 +1205,8 @@
   margin-top: 8px;
 }
 
-.curriculo-preview-contatos span {
+.curriculo-preview-contatos span,
+.curriculo-preview-contatos a {
   display: inline-flex;
   max-width: 100%;
   align-items: center;
@@ -1214,7 +1215,12 @@
   font-size: 11px;
   font-weight: 750;
   line-height: 1.25;
+  text-decoration: none;
   overflow-wrap: anywhere;
+}
+
+.curriculo-preview-contatos a {
+  color: #93c5fd;
 }
 
 .curriculo-preview-contatos svg {
@@ -1227,6 +1233,12 @@
     display: inline-flex;
     align-items: center;
     gap: 1.6mm;
+  }
+
+  .curriculo-doc-contato a {
+    color: #24272a;
+    font-weight: 800;
+    text-decoration: none;
   }
 
   .curriculo-doc-contato svg {

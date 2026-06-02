@@ -199,6 +199,18 @@ function separarTecnologiasPorObjetivo(tecnologias = [], tipo = 'primeira-vaga')
   return { principais, estudo }
 }
 
+function linkContato(id, valor) {
+  if (!valor) return ''
+  if (id === 'email') return `mailto:${valor}`
+  if (id === 'telefone') return `tel:${String(valor).replace(/\D/g, '')}`
+  if (['linkedin', 'github', 'portfolio'].includes(id)) return valor
+  return ''
+}
+
+function contatoEhLinkSocial(id) {
+  return ['linkedin', 'github', 'portfolio'].includes(id)
+}
+
 function montarCurriculoTexto(curriculo, dados) {
   const anexosCertificados = Array.isArray(curriculo.certificadosExternosArquivos) ? curriculo.certificadosExternosArquivos : []
   const linhas = [
@@ -1082,12 +1094,24 @@ export function PerfilAluno() {
                         <h3>{dadosCurriculo.nome}</h3>
                         <p>{curriculoForm.titulo}</p>
                         <div className="curriculo-preview-contatos">
-                          {contatosCurriculo.map(({ id, valor, Icone }) => (
-                            <span key={id}>
-                              <Icone size={12} />
-                              {valor}
-                            </span>
-                          ))}
+                          {contatosCurriculo.map(({ id, rotulo, valor, Icone }) => {
+                            const href = linkContato(id, valor)
+                            if (contatoEhLinkSocial(id) && href) {
+                              return (
+                                <a key={id} href={href} target="_blank" rel="noreferrer" aria-label={rotulo} title={valor}>
+                                  <Icone size={12} />
+                                  {rotulo}
+                                </a>
+                              )
+                            }
+
+                            return (
+                              <span key={id}>
+                                <Icone size={12} />
+                                {valor}
+                              </span>
+                            )
+                          })}
                         </div>
                       </div>
                       {curriculoForm.mostrarFoto && curriculoForm.fotoUrl && <img src={curriculoForm.fotoUrl} alt="" />}
@@ -1185,12 +1209,23 @@ export function PerfilAluno() {
                     </div>
                   </div>
                   <ul className="curriculo-doc-contato">
-                    {contatosCurriculo.map(({ id, rotulo, valor, Icone }) => (
-                      <li key={id}>
-                        <span><Icone size={12} />{rotulo}</span>
-                        {valor}
-                      </li>
-                    ))}
+                    {contatosCurriculo.map(({ id, rotulo, valor, Icone }) => {
+                      const href = linkContato(id, valor)
+                      const social = contatoEhLinkSocial(id)
+
+                      return (
+                        <li key={id}>
+                          <span><Icone size={12} />{rotulo}</span>
+                          {social && href ? (
+                            <a href={href} target="_blank" rel="noreferrer" title={valor}>
+                              {rotulo}
+                            </a>
+                          ) : (
+                            valor
+                          )}
+                        </li>
+                      )
+                    })}
                   </ul>
                 </header>
 
@@ -1226,7 +1261,7 @@ export function PerfilAluno() {
                   </section>
 
                   <section>
-                    <h3>Skills</h3>
+                    <h3>Tecnologias e competencias</h3>
                     <ul>
                       {(tecnologiasSeparadas.principais.length ? tecnologiasSeparadas.principais : tecnologiasCurriculo).slice(0, 8).map((item) => (
                         <li key={item}>{item}</li>
@@ -1258,7 +1293,7 @@ export function PerfilAluno() {
 
                 {((curriculoForm.mostrarCertificadosTrilum && !!dadosCurriculo.certificados.length) || (curriculoForm.mostrarCertificadosExternos && (!!certificadosExternosCurriculo.length || !!anexosCertificadosCurriculo.length))) && (
                   <section className="curriculo-doc-secao">
-                    <h3>Certificados</h3>
+                    <h3>{curriculoForm.mostrarCertificadosTrilum && dadosCurriculo.certificados.length ? 'Certificados' : 'Certificados externos'}</h3>
                     <ul>
                       {curriculoForm.mostrarCertificadosTrilum && dadosCurriculo.certificados.slice(0, 5).map((item) => (
                         <li key={`${item.tipo}-${item.id}`}>{item.titulo} - {item.tipo} Trilum</li>
