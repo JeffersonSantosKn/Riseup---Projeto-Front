@@ -56,7 +56,7 @@ export function MentorEmpresaToast({
       return {
         saudacao: 'Ei, pessoal da empresa, antes de acelerar as vagas vale revisar isso:',
         itens: perfil.avisos,
-        acao: { href: '/empresa/perfil', label: 'Atualizar perfil' },
+        acao: { to: '/empresa/perfil', label: 'Atualizar perfil' },
       }
     }
 

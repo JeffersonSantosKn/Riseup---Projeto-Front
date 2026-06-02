@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import mentorLadoDireito from '../../ativos/imagens/mentores/mentor-lado-direito.png'
 import mentorLadoEsquerdo from '../../ativos/imagens/mentores/mentor-lado-esquerdo.png'
 
@@ -127,11 +128,15 @@ export function MentorFeedback({ saudacao, titulo = 'Mentor', itens = [], mensag
               {mensagemDetalhe && <p className="mentor-feedback-message-detail">{mensagemDetalhe}</p>}
             </>
           )}
-          {acao && (
+          {acao?.to ? (
+            <Link className="mentor-feedback-action" to={acao.to}>
+              {acao.label}
+            </Link>
+          ) : acao ? (
             <a className="mentor-feedback-action" href={acao.href}>
               {acao.label}
             </a>
-          )}
+          ) : null}
         </div>
         <img className="mentor-feedback-robot" src={robo} alt="" aria-hidden="true" />
       </div>

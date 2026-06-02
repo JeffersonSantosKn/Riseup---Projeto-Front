@@ -1580,6 +1580,16 @@
   outline: none;
 }
 
+.criar-vaga-page .mentor-compactado,
+.main-com-nav .criar-vaga-page .mentor-compactado {
+  border-radius: 18px;
+}
+
+.criar-vaga-page .mentor-compactado img,
+.main-com-nav .criar-vaga-page .mentor-compactado img {
+  border-radius: 0;
+}
+
 .mentor-feedback-shell {
   position: relative;
   display: grid;
