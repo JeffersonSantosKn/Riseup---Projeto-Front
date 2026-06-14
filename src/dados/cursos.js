@@ -2393,25 +2393,7 @@ const cursosBase = [
       ],
     },
   ),
-  curso(
-    'curso-qa-manual',
-    'QA manual e cenários de teste',
-    'QA',
-    'qa',
-    'Iniciante',
-    '9h35',
-    videosCursos.qaCompleto,
-    ['qa', 'testes', 'qualidade', 'bugs', 'automacao', 'ruby', 'git', 'api', 'mobile', 'appium', 'docker'],
-    ['qa-testes'],
-    'Curso Do 0 Ao QA Completo com fundamentos de qualidade, testes manuais, casos de teste, reporte de bugs, automação web, Git, API, mobile, Appium, Jenkins e Docker.',
-    'Entrada prática para qualidade de software, com módulos do básico ao avançado.',
-    {
-      professor: professorQa,
-      aulas: aulasQaCompleto,
-      modulos: modulosQaCompleto,
-      thumbnailUrl: 'https://img.youtube.com/vi/5S7YP0SQ_eU/hqdefault.jpg',
-    },
-  ),
+
   curso(
     'curso-ingles-docs',
     'Inglês técnico para programação',
