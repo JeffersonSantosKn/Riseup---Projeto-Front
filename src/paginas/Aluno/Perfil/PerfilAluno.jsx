@@ -1,4 +1,4 @@
-import { ArrowLeft, Award, BriefcaseBusiness, Camera, Clipboard, Download, FileText, GitBranch, Globe2, GraduationCap, Link2, LogOut, Mail, MapPin, Pencil, Phone, Save, X } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, Award, BriefcaseBusiness, Camera, CheckCircle2, Clipboard, Download, FileText, GitBranch, Globe2, GraduationCap, Link2, LogOut, Mail, MapPin, Pencil, Phone, Save, Sparkles, X } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MentorPaginaAlunoToast } from '../../../componentes/interface/MentorPaginaAlunoToast'
@@ -10,6 +10,9 @@ import { trilhas } from '../../../dados/trilhas'
 import { baixarCertificadoPdf } from '../../../servicos/certificados'
 
 import { cursoComoConteudo } from '../../../servicos/conteudosCurso'
+import { criarOrientacaoCampoMentor, criarOrientacaoPerfilPublico } from '../../../servicos/mentorAlunoContextual'
+import { gerarDicasCurriculo, gerarDicasPerfil, montarContextoMentorAluno } from '../../../servicos/mentorIA'
+import { analisarCurriculoAntesExportar, calcularForcaPerfilProfissional, obterSugestoesPerfil } from '../../../servicos/perfilProfissional'
 import { calcularProgresso } from '../../../servicos/recomendacoes'
 
 function rotuloTecnologia(tecnologia) {
@@ -121,6 +124,31 @@ function textoParaLinhas(texto = '') {
 
 function linhasParaTexto(lista = []) {
   return lista.filter(Boolean).join('\n')
+}
+
+function FeedbackCampo({ analise, sugestoes = [], onUsarSugestao }) {
+  if (!analise) return null
+  const problemas = analise.problemas || (analise.valido === false && analise.mensagem ? [analise.mensagem] : [])
+  const mensagemBoa = analise.valido === true ? analise.mensagem : ''
+  if (!problemas.length && !mensagemBoa) return null
+
+  return (
+    <div className={`perfil-validacao ${problemas.length ? 'perfil-validacao-alerta' : 'perfil-validacao-bom'}`}>
+      <div className="perfil-validacao-mensagem">
+        {problemas.length ? <AlertTriangle size={15} /> : <CheckCircle2 size={15} />}
+        <span>{problemas[0] || mensagemBoa}</span>
+      </div>
+      {!!sugestoes.length && onUsarSugestao && (
+        <div className="perfil-sugestoes-acoes">
+          {sugestoes.slice(0, 3).map((sugestao) => (
+            <button key={sugestao} type="button" onClick={() => onUsarSugestao(sugestao)}>
+              <Sparkles size={13} /> Usar: {sugestao}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 function normalizarLinhaTecnologia(linha = '') {
@@ -319,6 +347,7 @@ export function PerfilAluno() {
   const [editando, setEditando] = useState(false)
   const [form, setForm] = useState(formInicial)
   const [isDragging, setIsDragging] = useState(false)
+  const [campoFocadoMentor, setCampoFocadoMentor] = useState('')
 
   const refCursosScroll = useRef(null)
   const refCertificadosScroll = useRef(null)
@@ -407,6 +436,7 @@ export function PerfilAluno() {
   const [curriculoAberto, setCurriculoAberto] = useState(false)
   const [curriculoForm, setCurriculoForm] = useState(curriculoInicial)
   const [curriculoCopiado, setCurriculoCopiado] = useState(false)
+  const [revisaoExportacao, setRevisaoExportacao] = useState(null)
   const tecnologiasPerfilCurriculo = form.tecnologiasComNivel || linhasParaTexto(montarTecnologiasCurriculo(tecnologiasEstudadas, usuarioAtual?.tecnologias || []))
   const curriculoComPerfil = {
     ...curriculoForm,
@@ -434,6 +464,19 @@ export function PerfilAluno() {
   const competenciasCurriculo = linhasLimpasCurriculo(curriculoComPerfil.competencias)
   const certificadosExternosCurriculo = linhasLimpasCurriculo(curriculoComPerfil.certificadosExternos)
   const anexosCertificadosCurriculo = Array.isArray(curriculoComPerfil.certificadosExternosArquivos) ? curriculoComPerfil.certificadosExternosArquivos : []
+  const sugestoesPerfil = obterSugestoesPerfil(respostasWizard)
+  const forcaPerfil = calcularForcaPerfilProfissional({
+    titulo: form.titulo,
+    bio: form.bio,
+    tecnologias: form.tecnologias,
+    tecnologiasComNivel: form.tecnologiasComNivel,
+    linkedin: form.linkedin,
+    github: form.github,
+    portfolio: form.portfolio,
+    projetos: form.projetos,
+    curriculo: curriculoComPerfil,
+    respostasWizard,
+  })
   const contatosCurriculo = [
     { id: 'telefone', rotulo: 'Telefone', valor: curriculoComPerfil.telefone, Icone: Phone },
     { id: 'email', rotulo: 'E-mail', valor: curriculoComPerfil.email, Icone: Mail },
@@ -451,6 +494,28 @@ export function PerfilAluno() {
     !dadosCurriculo.certificados.length && !certificadosExternosCurriculo.length && 'adicione certificados da Trilum ou externos para fortalecer sua formação',
     tecnologiasCurriculo.some((item) => !item.includes('-') && !item.includes('—')) && 'coloque nível nas tecnologias, por exemplo: JavaScript - básico',
   ].filter(Boolean)
+  const contextoMentorCurriculo = montarContextoMentorAluno({
+    usuarioAtual,
+    respostasWizard,
+    curriculo: {
+      ...curriculoComPerfil,
+      tecnologias: tecnologiasCurriculo,
+      projetos: projetosCurriculo,
+      certificados: [...dadosCurriculo.certificados, ...certificadosExternosCurriculo],
+    },
+    tecnologiasEstudadas,
+  })
+  const contextoMentorPerfil = montarContextoMentorAluno({
+    usuarioAtual: {
+      ...usuarioAtual,
+      titulo: form.titulo,
+      bio: form.bio,
+      tecnologias: form.tecnologias.split(',').map((item) => item.trim()).filter(Boolean),
+    },
+    respostasWizard,
+    curriculo: curriculoComPerfil,
+    tecnologiasEstudadas,
+  })
 
   function iniciarDrag(e, ref) {
     if (!ref.current) return
@@ -565,6 +630,7 @@ export function PerfilAluno() {
       projetos: form.projetos,
     }))
     setCurriculoAberto(true)
+    setCampoFocadoMentor('objetivoCurriculo')
     window.setTimeout(() => document.getElementById('meu-curriculo')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80)
   }
 
@@ -582,14 +648,88 @@ export function PerfilAluno() {
     window.setTimeout(() => setCurriculoCopiado(false), 1800)
   }
 
-  function exportarCurriculoPdf() {
+  function imprimirCurriculo() {
+    setRevisaoExportacao(null)
     document.body.classList.add('imprimindo-curriculo')
     window.addEventListener('afterprint', () => document.body.classList.remove('imprimindo-curriculo'), { once: true })
     window.print()
     window.setTimeout(() => document.body.classList.remove('imprimindo-curriculo'), 400)
   }
 
+  function exportarCurriculoPdf() {
+    const revisao = analisarCurriculoAntesExportar(curriculoComPerfil, perfilProfissional, respostasWizard)
+    if (!revisao.pronto) {
+      setRevisaoExportacao(revisao)
+      return
+    }
+    imprimirCurriculo()
+  }
+
   function sair() { logout(); navigate('/') }
+
+  function rolarParaSecao(id) {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  async function copiarSugestao(texto) {
+    if (!texto) return
+    await navigator.clipboard.writeText(texto)
+  }
+
+  const orientacaoCampoBase = useMemo(
+    () => criarOrientacaoCampoMentor(campoFocadoMentor, respostasWizard),
+    [campoFocadoMentor, respostasWizard],
+  )
+  const orientacaoCampo = orientacaoCampoBase
+    ? {
+        ...orientacaoCampoBase,
+        acao: orientacaoCampoBase.acao
+          ? {
+              ...orientacaoCampoBase.acao,
+              onClick: () => {
+                if (orientacaoCampoBase.acao.tipo === 'aplicar-curriculo') {
+                  atualizarCurriculo(orientacaoCampoBase.acao.campo, orientacaoCampoBase.acao.valor)
+                } else {
+                  atualizar(orientacaoCampoBase.acao.campo, orientacaoCampoBase.acao.valor)
+                }
+              },
+            }
+          : null,
+        acoes: orientacaoCampoBase.exemplos?.[0]
+          ? [{ label: 'Copiar sugestão', onClick: () => copiarSugestao(orientacaoCampoBase.exemplos[0]) }]
+          : [],
+      }
+    : null
+  const orientacaoPerfilPublico = criarOrientacaoPerfilPublico({
+    usuarioAtual: {
+      ...usuarioAtual,
+      titulo: form.titulo,
+      bio: form.bio,
+      tecnologias: form.tecnologias.split(',').map((item) => item.trim()).filter(Boolean),
+    },
+    perfilProfissional: {
+      ...perfilProfissional,
+      linkedin: form.linkedin,
+      github: form.github,
+      portfolio: form.portfolio,
+      projetos: form.projetos,
+      tecnologiasComNivel: form.tecnologiasComNivel,
+    },
+    respostasWizard,
+    curriculo: curriculoComPerfil,
+  })
+  const orientacaoPerfilAtiva = {
+    ...orientacaoPerfilPublico,
+    acao: {
+      label: 'Melhorar perfil',
+      onClick: () => {
+        setEditando(true)
+        setCampoFocadoMentor('titulo')
+      },
+    },
+    gerar: (opcoes) => gerarDicasPerfil(contextoMentorPerfil, opcoes),
+  }
+  const orientacaoContextual = editando || curriculoAberto ? orientacaoCampo : orientacaoPerfilAtiva
 
   return (
     <div className="perfil-gh-wrapper">
@@ -639,10 +779,10 @@ export function PerfilAluno() {
           {form.bio && <p className="perfil-sidebar-bio">{form.bio}</p>}
 
           <nav>
-            <a className="ativo" href="#perfil-publico">Perfil</a>
-            <a href="#aprendizado">Aprendizado</a>
-            <a href="#certificados">Certificados</a>
-            <a href="#candidaturas">Candidaturas</a>
+            <button className="perfil-sidebar-link ativo" type="button" onClick={() => rolarParaSecao('perfil-publico')}>Perfil</button>
+            <button className="perfil-sidebar-link" type="button" onClick={() => rolarParaSecao('aprendizado')}>Aprendizado</button>
+            <button className="perfil-sidebar-link" type="button" onClick={() => rolarParaSecao('certificados')}>Certificados</button>
+            <button className="perfil-sidebar-link" type="button" onClick={() => rolarParaSecao('candidaturas')}>Candidaturas</button>
             <Link to="/aluno/questionario">Editar Wizard</Link>
             <button className="perfil-sidebar-link" type="button" onClick={abrirCurriculo}>
               Meu Currículo
@@ -729,11 +869,19 @@ export function PerfilAluno() {
                     placeholder="Ex: Desenvolvedor Front-end Júnior"
                     value={form.titulo}
                     onChange={(e) => atualizar('titulo', e.target.value)}
+                    onFocus={() => setCampoFocadoMentor('titulo')}
+                    onClick={() => setCampoFocadoMentor('titulo')}
                   />
                   <span className={form.titulo.length >= 55 ? 'perfil-contador-alerta' : ''}>
                     {form.titulo.length}/60
                   </span>
                 </div>
+                <small>Use uma frase curta sobre como você quer ser visto. Ex.: {sugestoesPerfil.titulo}.</small>
+                <FeedbackCampo
+                  analise={forcaPerfil.titulo}
+                  sugestoes={sugestoesPerfil.titulos}
+                  onUsarSugestao={(valor) => atualizar('titulo', valor)}
+                />
               </label>
 
               <label className="perfil-field" data-mentor-pagina-section="bio">
@@ -744,6 +892,14 @@ export function PerfilAluno() {
                   placeholder="Conte um pouco sobre você, sua trajetória e objetivos..."
                   value={form.bio}
                   onChange={(e) => atualizar('bio', e.target.value)}
+                  onFocus={() => setCampoFocadoMentor('bio')}
+                  onClick={() => setCampoFocadoMentor('bio')}
+                />
+                <small>Escreva de 2 a 4 frases sobre área, tecnologias, objetivo e projetos.</small>
+                <FeedbackCampo
+                  analise={{ valido: forcaPerfil.resumo.qualidade === 'bom', problemas: forcaPerfil.resumo.problemas }}
+                  sugestoes={[sugestoesPerfil.resumo]}
+                  onUsarSugestao={(valor) => atualizar('bio', valor)}
                 />
               </label>
 
@@ -755,8 +911,15 @@ export function PerfilAluno() {
                   placeholder="HTML, CSS, JavaScript, Git"
                   value={form.tecnologias}
                   onChange={(e) => atualizar('tecnologias', e.target.value)}
+                  onFocus={() => setCampoFocadoMentor('tecnologias')}
+                  onClick={() => setCampoFocadoMentor('tecnologias')}
                 />
                 <small>Lista curta do que voce quer destacar no perfil. Exemplo: HTML, CSS, JavaScript, Git.</small>
+                <FeedbackCampo
+                  analise={forcaPerfil.tecnologias}
+                  sugestoes={[sugestoesPerfil.tecnologias]}
+                  onUsarSugestao={(valor) => atualizar('tecnologias', valor)}
+                />
               </label>
 
               <section className="perfil-form-section">
@@ -764,15 +927,18 @@ export function PerfilAluno() {
                 <div className="perfil-campo-grid perfil-campo-2col">
                   <label className="perfil-field">
                     <span>LinkedIn</span>
-                    <input value={form.linkedin} placeholder="https://linkedin.com/in/seu-nome" onChange={(e) => atualizar('linkedin', e.target.value)} />
+                    <input value={form.linkedin} placeholder="https://linkedin.com/in/seu-nome" onChange={(e) => atualizar('linkedin', e.target.value)} onFocus={() => setCampoFocadoMentor('linkedin')} onClick={() => setCampoFocadoMentor('linkedin')} />
+                    <FeedbackCampo analise={forcaPerfil.links.linkedin} />
                   </label>
                   <label className="perfil-field">
                     <span>GitHub</span>
-                    <input value={form.github} placeholder="https://github.com/seu-usuario" onChange={(e) => atualizar('github', e.target.value)} />
+                    <input value={form.github} placeholder="https://github.com/seu-usuario" onChange={(e) => atualizar('github', e.target.value)} onFocus={() => setCampoFocadoMentor('github')} onClick={() => setCampoFocadoMentor('github')} />
+                    <FeedbackCampo analise={forcaPerfil.links.github} />
                   </label>
                   <label className="perfil-field">
                     <span>Portfolio / site pessoal</span>
-                    <input value={form.portfolio} placeholder="https://seuportfolio.com" onChange={(e) => atualizar('portfolio', e.target.value)} />
+                    <input value={form.portfolio} placeholder="https://seuportfolio.com" onChange={(e) => atualizar('portfolio', e.target.value)} onFocus={() => setCampoFocadoMentor('portfolio')} onClick={() => setCampoFocadoMentor('portfolio')} />
+                    <FeedbackCampo analise={forcaPerfil.links.portfolio} />
                   </label>
                   <label className="perfil-field">
                     <span>Telefone profissional</span>
@@ -785,7 +951,13 @@ export function PerfilAluno() {
                 <h3>Informações profissionais</h3>
                 <label className="perfil-field">
                   <span>Tecnologias com nivel <em>(uma por linha)</em></span>
-                  <textarea rows={4} placeholder={'HTML - basico\nCSS - basico\nJavaScript - estudando\nGit/GitHub - basico'} value={form.tecnologiasComNivel} onChange={(e) => atualizar('tecnologiasComNivel', e.target.value)} />
+                  <textarea rows={4} placeholder={'HTML - basico\nCSS - basico\nJavaScript - estudando\nGit/GitHub - basico'} value={form.tecnologiasComNivel} onChange={(e) => atualizar('tecnologiasComNivel', e.target.value)} onFocus={() => setCampoFocadoMentor('tecnologiasComNivel')} onClick={() => setCampoFocadoMentor('tecnologiasComNivel')} />
+                  <small>Liste uma tecnologia por linha e informe seu nível com honestidade.</small>
+                  <FeedbackCampo
+                    analise={forcaPerfil.tecnologias}
+                    sugestoes={[sugestoesPerfil.tecnologiasComNivel]}
+                    onUsarSugestao={(valor) => atualizar('tecnologiasComNivel', valor)}
+                  />
                 </label>
                 <div className="perfil-campo-grid perfil-campo-2col">
                   <label className="perfil-field">
@@ -794,21 +966,27 @@ export function PerfilAluno() {
                   </label>
                   <label className="perfil-field">
                     <span>Formação</span>
-                    <textarea rows={3} placeholder="Analise e Desenvolvimento de Sistemas - UNIT - cursando" value={form.formacoes} onChange={(e) => atualizar('formacoes', e.target.value)} />
+                    <textarea rows={3} placeholder="Analise e Desenvolvimento de Sistemas - UNIT - cursando" value={form.formacoes} onChange={(e) => atualizar('formacoes', e.target.value)} onFocus={() => setCampoFocadoMentor('formacoes')} onClick={() => setCampoFocadoMentor('formacoes')} />
                   </label>
                 </div>
                 <label className="perfil-field">
                   <span>Projetos pessoais</span>
-                  <textarea rows={4} placeholder="Landing Page Responsiva - HTML, CSS e JavaScript - foco em responsividade - link" value={form.projetos} onChange={(e) => atualizar('projetos', e.target.value)} />
+                  <textarea rows={4} placeholder="Landing Page Responsiva - HTML, CSS e JavaScript - foco em responsividade - link" value={form.projetos} onChange={(e) => atualizar('projetos', e.target.value)} onFocus={() => setCampoFocadoMentor('projetos')} onClick={() => setCampoFocadoMentor('projetos')} />
+                  <small>Inclua nome, objetivo, tecnologias e link do GitHub ou deploy quando existir.</small>
+                  <FeedbackCampo
+                    analise={forcaPerfil.projetos}
+                    sugestoes={[sugestoesPerfil.projeto]}
+                    onUsarSugestao={(valor) => atualizar('projetos', valor)}
+                  />
                 </label>
                 <div className="perfil-campo-grid perfil-campo-2col">
                   <label className="perfil-field">
                     <span>Experiências</span>
-                    <textarea rows={4} placeholder="Atendente - Empresa X - 2024 - atendimento ao cliente e organizacao" value={form.experiencias} onChange={(e) => atualizar('experiencias', e.target.value)} />
+                    <textarea rows={4} placeholder="Atendente - Empresa X - 2024 - atendimento ao cliente e organizacao" value={form.experiencias} onChange={(e) => atualizar('experiencias', e.target.value)} onFocus={() => setCampoFocadoMentor('experiencias')} onClick={() => setCampoFocadoMentor('experiencias')} />
                   </label>
                   <label className="perfil-field">
                     <span>Certificados externos</span>
-                    <textarea rows={4} placeholder="HTML e CSS - Curso em Video - 2026 - 40h - link" value={form.certificadosExternos} onChange={(e) => atualizar('certificadosExternos', e.target.value)} />
+                    <textarea rows={4} placeholder="HTML e CSS - Curso em Video - 2026 - 40h - link" value={form.certificadosExternos} onChange={(e) => atualizar('certificadosExternos', e.target.value)} onFocus={() => setCampoFocadoMentor('certificadosExternos')} onClick={() => setCampoFocadoMentor('certificadosExternos')} />
                   </label>
                 </div>
                 <div className="perfil-certificados-upload">
@@ -839,6 +1017,29 @@ export function PerfilAluno() {
                   Você tem alterações não salvas — clique em <strong>Salvar</strong> para confirmar ou <strong>Descartar</strong> para desfazer.
                 </div>
               )}
+            </section>
+          )}
+
+          {!editando && (
+            <section className="perfil-forca-card" aria-label="Força do perfil profissional">
+              <div className="perfil-forca-cabecalho">
+                <div>
+                  <span>Força do perfil</span>
+                  <strong>{forcaPerfil.score}% · {forcaPerfil.nivel}</strong>
+                </div>
+                <button className="botao botao-secondary" type="button" onClick={() => setEditando(true)}>
+                  Melhorar perfil
+                </button>
+              </div>
+              <div className="perfil-forca-barra" aria-hidden="true">
+                <span style={{ width: `${forcaPerfil.score}%` }} />
+              </div>
+              <div className="perfil-forca-lacunas">
+                <span>Próximas melhorias:</span>
+                {forcaPerfil.lacunas.length
+                  ? forcaPerfil.lacunas.slice(0, 4).map((lacuna) => <small key={lacuna}>{lacuna}</small>)
+                  : <small>Seu perfil está pronto para uma revisão final.</small>}
+              </div>
             </section>
           )}
 
@@ -1001,19 +1202,34 @@ export function PerfilAluno() {
                     <div className="perfil-campo-grid">
                     <label className="perfil-field">
                       <span>Título profissional</span>
-                      <input value={curriculoForm.titulo} onChange={(e) => atualizarCurriculo('titulo', e.target.value)} />
+                      <input value={curriculoForm.titulo} onChange={(e) => atualizarCurriculo('titulo', e.target.value)} onFocus={() => setCampoFocadoMentor('titulo')} onClick={() => setCampoFocadoMentor('titulo')} />
+                      <FeedbackCampo
+                        analise={forcaPerfil.titulo}
+                        sugestoes={sugestoesPerfil.titulos}
+                        onUsarSugestao={(valor) => atualizarCurriculo('titulo', valor)}
+                      />
                       <small>Por padrão, usamos seu título do perfil. Você pode ajustar só para este currículo.</small>
                     </label>
                   </div>
 
                   <label className="perfil-field">
                     <span>Objetivo profissional</span>
-                    <textarea rows={3} value={curriculoForm.objetivo} onChange={(e) => atualizarCurriculo('objetivo', e.target.value)} />
+                    <textarea rows={3} value={curriculoForm.objetivo} onChange={(e) => atualizarCurriculo('objetivo', e.target.value)} onFocus={() => setCampoFocadoMentor('objetivoCurriculo')} onClick={() => setCampoFocadoMentor('objetivoCurriculo')} />
+                    <FeedbackCampo
+                      analise={!curriculoForm.objetivo ? { problemas: ['Explique qual oportunidade você busca.'] } : null}
+                      sugestoes={[sugestoesPerfil.objetivo]}
+                      onUsarSugestao={(valor) => atualizarCurriculo('objetivo', valor)}
+                    />
                   </label>
 
                   <label className="perfil-field">
                     <span>Resumo profissional</span>
-                    <textarea rows={4} value={curriculoForm.resumo} onChange={(e) => atualizarCurriculo('resumo', e.target.value)} />
+                    <textarea rows={4} value={curriculoForm.resumo} onChange={(e) => atualizarCurriculo('resumo', e.target.value)} onFocus={() => setCampoFocadoMentor('resumoCurriculo')} onClick={() => setCampoFocadoMentor('resumoCurriculo')} />
+                    <FeedbackCampo
+                      analise={{ valido: forcaPerfil.resumo.qualidade === 'bom', problemas: forcaPerfil.resumo.problemas }}
+                      sugestoes={[sugestoesPerfil.resumo]}
+                      onUsarSugestao={(valor) => atualizarCurriculo('resumo', valor)}
+                    />
                     <small>Por padrão, usamos sua bio do perfil. Escreva 2 a 4 frases sobre quem você é e o que busca.</small>
                   </label>
 
@@ -1034,6 +1250,8 @@ export function PerfilAluno() {
                       placeholder="Landing Page Responsiva - HTML, CSS e JavaScript - foco em responsividade"
                       value={curriculoForm.projetos}
                       onChange={(e) => atualizarCurriculo('projetos', e.target.value)}
+                      onFocus={() => setCampoFocadoMentor('projetos')}
+                      onClick={() => setCampoFocadoMentor('projetos')}
                     />
                   </label>
 
@@ -1072,22 +1290,6 @@ export function PerfilAluno() {
                 </div>
 
                 <aside className="curriculo-preview-col">
-                  <div className="curriculo-mentor-box">
-                    <strong>Mentor</strong>
-                    <p>
-                      {dicasCurriculo.length
-                        ? `Ei ${primeiroNome(nomeCompleto)}, seu currículo está quase pronto. Veja o que eu melhoraria:`
-                        : `Boa, ${primeiroNome(nomeCompleto)}. Seu currículo já tem uma base consistente para começar a enviar.`}
-                    </p>
-                    {!!dicasCurriculo.length && (
-                      <ul>
-                        {dicasCurriculo.map((dica) => (
-                          <li key={dica}>{dica}</li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-
                   <article className={`curriculo-preview curriculo-preview-${curriculoForm.modelo}`}>
                     <header>
                       <div>
@@ -1462,9 +1664,47 @@ export function PerfilAluno() {
         </main>
       </section>
 
+      {revisaoExportacao && (
+        <div className="perfil-revisao-overlay" role="presentation" onMouseDown={() => setRevisaoExportacao(null)}>
+          <section className="perfil-revisao-modal" role="dialog" aria-modal="true" aria-labelledby="titulo-revisao-curriculo" onMouseDown={(evento) => evento.stopPropagation()}>
+            <header>
+              <div>
+                <span>Revisão antes de exportar</span>
+                <h2 id="titulo-revisao-curriculo">Seu currículo pode ficar mais forte</h2>
+              </div>
+              <button type="button" aria-label="Fechar revisão" onClick={() => setRevisaoExportacao(null)}><X size={18} /></button>
+            </header>
+            <p>Encontrei alguns pontos que podem enfraquecer sua apresentação. A exportação não está bloqueada.</p>
+            <ul>
+              {revisaoExportacao.problemas.slice(0, 6).map((problema) => <li key={problema}>{problema}</li>)}
+            </ul>
+            <div className="perfil-revisao-acoes">
+              <button className="botao botao-primary" type="button" onClick={() => { setRevisaoExportacao(null); setCurriculoAberto(true); setCampoFocadoMentor('objetivoCurriculo') }}>
+                Revisar com mentor
+              </button>
+              <button className="botao botao-secondary" type="button" onClick={imprimirCurriculo}>
+                Exportar mesmo assim
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+
       <MentorPaginaAlunoToast
         mensagens={editando ? mensagensEditarPerfil : mensagensPerfil}
         mapaSecoes={editando ? mapaMentorEditarPerfil : mapaMentorPerfil}
+        orientacaoContextual={orientacaoContextual}
+        cenariosInteligentes={[
+          {
+            id: 'curriculo',
+            label: 'Currículo',
+            titulo: 'Como fortalecer seu currículo',
+            descricao: dicasCurriculo.length
+              ? `Ei ${primeiroNome(nomeCompleto)}, encontrei ${dicasCurriculo.length} ponto${dicasCurriculo.length === 1 ? '' : 's'} para fortalecer seu currículo.`
+              : `Boa, ${primeiroNome(nomeCompleto)}. Seu currículo já tem uma base consistente para começar a enviar.`,
+            gerar: (opcoes) => gerarDicasCurriculo(contextoMentorCurriculo, opcoes),
+          },
+        ]}
       />
     </div>
   )
