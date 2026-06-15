@@ -3,6 +3,8 @@ import { useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MentorPaginaAlunoToast } from '../../../componentes/interface/MentorPaginaAlunoToast'
 import { Avatar } from '../../../componentes/perfis/Avatar'
+import { ProjetoPraticoCard } from '../../../componentes/projetos/ProjetoPraticoCard'
+import { RadarProntidaoCard } from '../../../componentes/candidaturas/RadarProntidaoCard'
 import { useApp } from '../../../contextos/AppContext'
 import { cursos } from '../../../dados/cursos'
 import { mensagensEditarPerfil, mensagensPerfil } from '../../../dados/mensagensMentorAluno'
@@ -13,7 +15,10 @@ import { cursoComoConteudo } from '../../../servicos/conteudosCurso'
 import { criarOrientacaoCampoMentor, criarOrientacaoPerfilPublico } from '../../../servicos/mentorAlunoContextual'
 import { gerarDicasCurriculo, gerarDicasPerfil, montarContextoMentorAluno } from '../../../servicos/mentorIA'
 import { analisarCurriculoAntesExportar, calcularForcaPerfilProfissional, obterSugestoesPerfil } from '../../../servicos/perfilProfissional'
-import { calcularProgresso } from '../../../servicos/recomendacoes'
+import { calcularProgresso, recomendarCursos, recomendarTrilhas } from '../../../servicos/recomendacoes'
+import { calcularProntidaoAluno } from '../../../servicos/prontidaoCandidatura'
+import { criarOrientacaoMentorCandidatura, gerarRetornoCandidaturaAluno } from '../../../servicos/retornoCandidaturaAluno'
+import { gerarProjetosSugeridosAluno, projetoEhEvidencia, projetoPodeAparecerNoCurriculo, projetoSugeridoParaProjetoAluno } from '../../../servicos/projetosPraticos'
 
 function rotuloTecnologia(tecnologia) {
   const chave = String(tecnologia || '').trim().toLowerCase()
@@ -302,6 +307,8 @@ const mapaMentorPerfil = {
   aprendizado: 'perfil-aprendizado',
   tecnologias: 'perfil-tecnologias',
   certificados: 'perfil-certificados',
+  radar: 'perfil-radar-prontidao',
+  projetos: 'perfil-projetos-praticos',
   candidaturas: 'perfil-candidaturas',
 }
 
@@ -316,7 +323,7 @@ const mapaMentorEditarPerfil = {
 
 export function PerfilAluno() {
   const navigate = useNavigate()
-  const { usuarioAtual, respostasWizard, progressoCursos, candidaturas, vagasEmpresa, atualizarAluno, logout } = useApp()
+  const { usuarioAtual, respostasWizard, progressoCursos, candidaturas, vagasEmpresa, empresas, atualizarAluno, adicionarProjetoPratico, atualizarProjetoPratico, logout } = useApp()
 
   const nome = usuarioAtual?.nome || 'Aluno Trilum Conecta'
   const partesNome = nome.split(' ')
@@ -348,6 +355,7 @@ export function PerfilAluno() {
   const [form, setForm] = useState(formInicial)
   const [isDragging, setIsDragging] = useState(false)
   const [campoFocadoMentor, setCampoFocadoMentor] = useState('')
+  const [alvoMelhoriaRadar, setAlvoMelhoriaRadar] = useState('')
 
   const refCursosScroll = useRef(null)
   const refCertificadosScroll = useRef(null)
@@ -382,6 +390,26 @@ export function PerfilAluno() {
 
   const tecnologiasEstudadas = calcularTecnologiasEstudadas(progressoCursos)
   const candidaturasDoAluno = candidaturas.filter((candidatura) => candidatura.alunoId === usuarioAtual?.id)
+  const candidaturasComRetorno = candidaturasDoAluno.map((candidatura) => {
+    const vaga = vagasEmpresa.find((item) => item.id === candidatura.vagaId) || {}
+    const empresa = empresas.find((item) => item.id === vaga.empresaId) || {}
+    return {
+      candidatura,
+      vaga,
+      retorno: gerarRetornoCandidaturaAluno({ candidatura, vaga, empresa, aluno: usuarioAtual }),
+    }
+  })
+  const meusProjetosPraticos = usuarioAtual?.projetosPraticos || []
+  const projetosComEvidencia = meusProjetosPraticos.filter(projetoEhEvidencia)
+  const projetosParaCurriculo = meusProjetosPraticos.filter(projetoPodeAparecerNoCurriculo)
+  const projetosEstruturadosTexto = projetosParaCurriculo
+    .map((projeto) => `${projeto.titulo} - ${projeto.tecnologias.slice(0, 5).join(', ')} - ${projeto.status === 'concluido' ? 'concluído' : 'em andamento'}${projeto.github ? ` - ${projeto.github}` : projeto.deploy ? ` - ${projeto.deploy}` : ''}`)
+    .join('\n')
+  const projetosSugeridos = gerarProjetosSugeridosAluno({
+    aluno: respostasWizard,
+    cursos: recomendarCursos(respostasWizard).slice(0, 1),
+    trilhas: recomendarTrilhas(respostasWizard).slice(0, 1),
+  })
   const dadosCurriculo = {
     nome: nomeCompleto,
     localizacao: usuarioAtual?.localizacao || respostasWizard.localizacao || '',
@@ -390,7 +418,8 @@ export function PerfilAluno() {
     certificados,
     candidaturas: candidaturasDoAluno.map((candidatura) => {
       const vaga = vagasEmpresa.find((item) => item.id === candidatura.vagaId)
-      return `${vaga?.titulo || 'Vaga removida'} - ${candidatura.status}`
+      const retorno = gerarRetornoCandidaturaAluno({ candidatura, vaga })
+      return `${vaga?.titulo || 'Vaga removida'} - ${retorno.status.rotulo}`
     }),
   }
 
@@ -428,10 +457,10 @@ export function PerfilAluno() {
       formacoes: perfilProfissional.formacoes || '',
       certificadosExternos: perfilProfissional.certificadosExternos || '',
       certificadosExternosArquivos: anexosCertificadosSalvos,
-      projetos: perfilProfissional.projetos || '',
+      projetos: [perfilProfissional.projetos, projetosEstruturadosTexto].filter(Boolean).join('\n'),
       competencias: perfilProfissional.competencias || salvo.competencias || 'Comunicação\nOrganização\nAprendizado contínuo',
     }
-  }, [form.bio, form.fotoUrl, form.titulo, perfilProfissional, respostasWizard.areaDesejada, tecnologiasEstudadas, usuarioAtual?.curriculo, usuarioAtual?.email, usuarioAtual?.tecnologias])
+  }, [form.bio, form.fotoUrl, form.titulo, perfilProfissional, projetosEstruturadosTexto, respostasWizard.areaDesejada, tecnologiasEstudadas, usuarioAtual?.curriculo, usuarioAtual?.email, usuarioAtual?.tecnologias])
 
   const [curriculoAberto, setCurriculoAberto] = useState(false)
   const [curriculoForm, setCurriculoForm] = useState(curriculoInicial)
@@ -473,9 +502,26 @@ export function PerfilAluno() {
     linkedin: form.linkedin,
     github: form.github,
     portfolio: form.portfolio,
-    projetos: form.projetos,
+    projetos: [form.projetos, projetosEstruturadosTexto].filter(Boolean).join('\n'),
     curriculo: curriculoComPerfil,
     respostasWizard,
+  })
+  const prontidaoCandidatura = calcularProntidaoAluno({
+    aluno: {
+      ...usuarioAtual,
+      titulo: form.titulo,
+      bio: form.bio,
+      tecnologias: form.tecnologias.split(',').map((item) => item.trim()).filter(Boolean),
+      perfilProfissional: {
+        ...perfilProfissional,
+        github: form.github,
+        linkedin: form.linkedin,
+        tecnologiasComNivel: form.tecnologiasComNivel,
+        projetos: form.projetos,
+      },
+      curriculo: curriculoComPerfil,
+      projetosPraticos: meusProjetosPraticos,
+    },
   })
   const contatosCurriculo = [
     { id: 'telefone', rotulo: 'Telefone', valor: curriculoComPerfil.telefone, Icone: Phone },
@@ -671,6 +717,34 @@ export function PerfilAluno() {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
+  function corrigirProximaAcaoRadar(acao) {
+    const tipo = acao?.tipo || 'github'
+    const alvosPerfil = new Set(['github', 'linkedin', 'titulo', 'resumo', 'tecnologias'])
+    const alvo = tipo === 'projeto-evidencia' ? 'projeto' : tipo
+
+    setAlvoMelhoriaRadar(alvo)
+    setCampoFocadoMentor(alvo === 'resumo' ? 'bio' : alvo === 'projeto' ? 'projetos' : alvo)
+
+    if (alvosPerfil.has(tipo)) {
+      setEditando(true)
+    } else if (tipo === 'curriculo') {
+      setCurriculoAberto(true)
+    } else {
+      setEditando(false)
+    }
+
+    window.setTimeout(() => {
+      const elemento = document.querySelector(`[data-melhoria-alvo="${alvo}"]`)
+      elemento?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      elemento?.querySelector('input, textarea, select')?.focus({ preventScroll: true })
+    }, 120)
+    window.setTimeout(() => setAlvoMelhoriaRadar(''), 4200)
+  }
+
+  function adicionarProjetoSugerido(projeto) {
+    adicionarProjetoPratico(projetoSugeridoParaProjetoAluno(projeto))
+  }
+
   async function copiarSugestao(texto) {
     if (!texto) return
     await navigator.clipboard.writeText(texto)
@@ -729,7 +803,31 @@ export function PerfilAluno() {
     },
     gerar: (opcoes) => gerarDicasPerfil(contextoMentorPerfil, opcoes),
   }
-  const orientacaoContextual = editando || curriculoAberto ? orientacaoCampo : orientacaoPerfilAtiva
+  const candidaturaMaisRecente = candidaturasComRetorno[0]
+  const orientacaoCandidatura = candidaturaMaisRecente
+    ? criarOrientacaoMentorCandidatura(candidaturaMaisRecente.retorno, candidaturaMaisRecente.vaga)
+    : null
+  const mensagensPerfilComCandidaturas = mensagensPerfil.map((mensagem) => {
+    if (mensagem.id === 'perfil-publico') return orientacaoPerfilAtiva
+    if (mensagem.id === 'perfil-candidaturas' && orientacaoCandidatura) return orientacaoCandidatura
+    return mensagem
+  }).concat(
+    {
+      id: 'perfil-radar-prontidao',
+      titulo: 'Radar de candidatura',
+      msg: `Seu radar está em ${prontidaoCandidatura.score}% (${prontidaoCandidatura.nivel}). A melhor ação agora é ${prontidaoCandidatura.proximaAcao.titulo.toLowerCase()}.`,
+      detalhe: `${prontidaoCandidatura.resumo} ${prontidaoCandidatura.proximaAcao.descricao}`,
+    },
+    {
+      id: 'perfil-projetos-praticos',
+      titulo: 'Transforme estudo em evidência',
+      msg: meusProjetosPraticos.length
+        ? 'Atualize seus projetos conforme desenvolver. Eles só aparecem como evidência forte quando possuem entrega real e um link.'
+        : 'Seu perfil ainda tem pouca evidência prática. Adicione um projeto sugerido como planejado e desenvolva no seu ritmo.',
+      detalhe: 'Projetos planejados não contam como conclusão. Para fortalecer perfil, currículo e candidaturas, registre descrição, tecnologias e GitHub ou deploy quando houver uma entrega real.',
+    },
+  )
+  const orientacaoContextual = editando || curriculoAberto ? orientacaoCampo : null
 
   return (
     <div className="perfil-gh-wrapper">
@@ -782,6 +880,8 @@ export function PerfilAluno() {
             <button className="perfil-sidebar-link ativo" type="button" onClick={() => rolarParaSecao('perfil-publico')}>Perfil</button>
             <button className="perfil-sidebar-link" type="button" onClick={() => rolarParaSecao('aprendizado')}>Aprendizado</button>
             <button className="perfil-sidebar-link" type="button" onClick={() => rolarParaSecao('certificados')}>Certificados</button>
+            <button className="perfil-sidebar-link" type="button" onClick={() => rolarParaSecao('radar-candidatura')}>Radar de candidatura</button>
+            <button className="perfil-sidebar-link" type="button" onClick={() => rolarParaSecao('projetos-praticos')}>Projetos práticos</button>
             <button className="perfil-sidebar-link" type="button" onClick={() => rolarParaSecao('candidaturas')}>Candidaturas</button>
             <Link to="/aluno/questionario">Editar Wizard</Link>
             <button className="perfil-sidebar-link" type="button" onClick={abrirCurriculo}>
@@ -860,7 +960,7 @@ export function PerfilAluno() {
                 </label>
               </div>
 
-              <label className="perfil-field" data-mentor-pagina-section="titulo">
+              <label className={`perfil-field ${alvoMelhoriaRadar === 'titulo' ? 'perfil-field-destaque' : ''}`} data-mentor-pagina-section="titulo" data-melhoria-alvo="titulo">
                 <span>Título / Profissão</span>
                 <div className="perfil-input-contador">
                   <input
@@ -884,7 +984,7 @@ export function PerfilAluno() {
                 />
               </label>
 
-              <label className="perfil-field" data-mentor-pagina-section="bio">
+              <label className={`perfil-field ${alvoMelhoriaRadar === 'resumo' ? 'perfil-field-destaque' : ''}`} data-mentor-pagina-section="bio" data-melhoria-alvo="resumo">
                 <span>Biografia</span>
                 <textarea
                   aria-label="Biografia"
@@ -903,7 +1003,7 @@ export function PerfilAluno() {
                 />
               </label>
 
-              <label className="perfil-field" data-mentor-pagina-section="tecnologias">
+              <label className={`perfil-field ${alvoMelhoriaRadar === 'tecnologias' ? 'perfil-field-destaque' : ''}`} data-mentor-pagina-section="tecnologias" data-melhoria-alvo="tecnologias">
                 <span className="perfil-tech-label-ajustado">Tecnologias principais do perfil</span>
                 <span>Tecnologias <em>(separadas por vírgula)</em></span>
                 <input
@@ -925,12 +1025,12 @@ export function PerfilAluno() {
               <section className="perfil-form-section">
                 <h3>Links profissionais</h3>
                 <div className="perfil-campo-grid perfil-campo-2col">
-                  <label className="perfil-field">
+                  <label className={`perfil-field ${alvoMelhoriaRadar === 'linkedin' ? 'perfil-field-destaque' : ''}`} data-melhoria-alvo="linkedin">
                     <span>LinkedIn</span>
                     <input value={form.linkedin} placeholder="https://linkedin.com/in/seu-nome" onChange={(e) => atualizar('linkedin', e.target.value)} onFocus={() => setCampoFocadoMentor('linkedin')} onClick={() => setCampoFocadoMentor('linkedin')} />
                     <FeedbackCampo analise={forcaPerfil.links.linkedin} />
                   </label>
-                  <label className="perfil-field">
+                  <label className={`perfil-field ${alvoMelhoriaRadar === 'github' ? 'perfil-field-destaque' : ''}`} data-melhoria-alvo="github">
                     <span>GitHub</span>
                     <input value={form.github} placeholder="https://github.com/seu-usuario" onChange={(e) => atualizar('github', e.target.value)} onFocus={() => setCampoFocadoMentor('github')} onClick={() => setCampoFocadoMentor('github')} />
                     <FeedbackCampo analise={forcaPerfil.links.github} />
@@ -1021,26 +1121,9 @@ export function PerfilAluno() {
           )}
 
           {!editando && (
-            <section className="perfil-forca-card" aria-label="Força do perfil profissional">
-              <div className="perfil-forca-cabecalho">
-                <div>
-                  <span>Força do perfil</span>
-                  <strong>{forcaPerfil.score}% · {forcaPerfil.nivel}</strong>
-                </div>
-                <button className="botao botao-secondary" type="button" onClick={() => setEditando(true)}>
-                  Melhorar perfil
-                </button>
-              </div>
-              <div className="perfil-forca-barra" aria-hidden="true">
-                <span style={{ width: `${forcaPerfil.score}%` }} />
-              </div>
-              <div className="perfil-forca-lacunas">
-                <span>Próximas melhorias:</span>
-                {forcaPerfil.lacunas.length
-                  ? forcaPerfil.lacunas.slice(0, 4).map((lacuna) => <small key={lacuna}>{lacuna}</small>)
-                  : <small>Seu perfil está pronto para uma revisão final.</small>}
-              </div>
-            </section>
+            <div id="radar-candidatura" data-mentor-pagina-section="radar">
+              <RadarProntidaoCard prontidao={prontidaoCandidatura} onMelhorar={corrigirProximaAcaoRadar} />
+            </div>
           )}
 
           {!editando && (
@@ -1070,6 +1153,20 @@ export function PerfilAluno() {
                   <article>
                     <h3>Projetos pessoais</h3>
                     <ul>{linhasLimpasCurriculo(form.projetos).map((item) => <li key={item}>{item}</li>)}</ul>
+                  </article>
+                )}
+                {!!projetosComEvidencia.length && (
+                  <article>
+                    <h3>Projetos práticos com evidência</h3>
+                    <ul>
+                      {projetosComEvidencia.map((projeto) => (
+                        <li key={projeto.id}>
+                          {projeto.titulo} - {projeto.tecnologias.slice(0, 4).join(', ')}
+                          {projeto.github && <> - <a href={projeto.github} target="_blank" rel="noreferrer">GitHub</a></>}
+                          {projeto.deploy && <> - <a href={projeto.deploy} target="_blank" rel="noreferrer">Deploy</a></>}
+                        </li>
+                      ))}
+                    </ul>
                   </article>
                 )}
                 {!!linhasLimpasCurriculo(form.formacoes).length && (
@@ -1108,7 +1205,7 @@ export function PerfilAluno() {
 
           {/* ── Aprendizado ── */}
           {curriculoAberto && (
-            <section className="perfil-udemy-form curriculo-inteligente" id="meu-curriculo">
+            <section className={`perfil-udemy-form curriculo-inteligente ${alvoMelhoriaRadar === 'curriculo' ? 'perfil-field-destaque' : ''}`} id="meu-curriculo" data-melhoria-alvo="curriculo">
               <header className="curriculo-header">
                 <div>
                   <span className="eyebrow">Gerador inteligente</span>
@@ -1642,20 +1739,129 @@ export function PerfilAluno() {
             )}
           </section>
 
+          <section className={`perfil-udemy-form ${alvoMelhoriaRadar === 'projeto' ? 'perfil-field-destaque' : ''}`} id="projetos-praticos" data-mentor-pagina-section="projetos" data-melhoria-alvo="projeto">
+            <div className="secao-cabecalho">
+              <span className="eyebrow">Do estudo para o portfólio</span>
+              <h2>Meus projetos práticos</h2>
+              <p>Projetos sugeridos começam como planejados. Atualize o status e adicione evidências conforme desenvolver.</p>
+            </div>
+
+            {meusProjetosPraticos.length > 0 && (
+              <div className="meus-projetos-praticos">
+                {meusProjetosPraticos.map((projeto) => (
+                  <article className="meu-projeto-pratico-card" key={projeto.id}>
+                    <header>
+                      <div><span className="eyebrow">{projeto.area}</span><h3>{projeto.titulo}</h3></div>
+                      <select value={projeto.status} onChange={(evento) => atualizarProjetoPratico(projeto.id, { status: evento.target.value })}>
+                        <option value="planejado">Planejado</option>
+                        <option value="em_andamento">Em andamento</option>
+                        <option value="concluido">Concluído</option>
+                      </select>
+                    </header>
+                    <p>{projeto.objetivo}</p>
+                    <div className="projeto-pratico-tags">{projeto.tecnologias.slice(0, 6).map((item) => <span key={item}>{item}</span>)}</div>
+                    <div className="meu-projeto-pratico-campos">
+                      <label>Descrição<textarea rows="3" value={projeto.descricao || ''} onChange={(evento) => atualizarProjetoPratico(projeto.id, { descricao: evento.target.value })} /></label>
+                      <label>GitHub<input placeholder="https://github.com/..." value={projeto.github || ''} onChange={(evento) => atualizarProjetoPratico(projeto.id, { github: evento.target.value })} /></label>
+                      <label>Deploy<input placeholder="https://..." value={projeto.deploy || ''} onChange={(evento) => atualizarProjetoPratico(projeto.id, { deploy: evento.target.value })} /></label>
+                    </div>
+                    <small>
+                      {projetoEhEvidencia(projeto)
+                        ? 'Evidência forte: este projeto pode aparecer para empresas e no currículo.'
+                        : projeto.status === 'planejado'
+                          ? 'Planejado: ainda não aparece como realização concluída.'
+                          : 'Adicione descrição e GitHub ou deploy para fortalecer esta evidência.'}
+                    </small>
+                  </article>
+                ))}
+              </div>
+            )}
+
+            <div className="projetos-praticos-recomendados">
+              {projetosSugeridos.map((projeto) => (
+                <ProjetoPraticoCard
+                  key={projeto.id}
+                  projeto={projeto}
+                  compacto
+                  adicionado={meusProjetosPraticos.some((item) => item.templateId === projeto.id)}
+                  onAdicionar={adicionarProjetoSugerido}
+                />
+              ))}
+            </div>
+          </section>
+
           {/* ── Candidaturas ── */}
           <section className="perfil-udemy-form" id="candidaturas" data-mentor-pagina-section="candidaturas">
             <h2>Candidaturas</h2>
-            {candidaturasDoAluno.length ? (
-              candidaturasDoAluno.map((candidatura) => {
-                const vaga = vagasEmpresa.find((v) => v.id === candidatura.vagaId)
-                return (
-                  <div className="candidatura-item" key={candidatura.id}>
-                    <strong>{vaga?.titulo || 'Vaga removida'}</strong>
-                    <span className="candidatura-status">{candidatura.status}</span>
+            {candidaturasComRetorno.length ? (
+              candidaturasComRetorno.map(({ candidatura, vaga, retorno }) => (
+                <article className="candidatura-item candidatura-acompanhamento" key={candidatura.id}>
+                  <header>
+                    <div>
+                      <span className="candidatura-empresa">{retorno.empresa}</span>
+                      <h3>{vaga?.titulo || 'Vaga removida'}</h3>
+                      <p>{[vaga?.modalidade, vaga?.nivel].filter(Boolean).join(' · ')}</p>
+                    </div>
+                    <span className={`candidatura-status candidatura-status-${retorno.status.tipo}`}>
+                      {retorno.status.rotulo}
+                    </span>
+                  </header>
+
+                  <section className="candidatura-feedback">
+                    <strong>{candidatura.feedbackPublicoAluno ? 'Feedback da empresa' : 'Atualização da candidatura'}</strong>
+                    <p>{retorno.feedback}</p>
+                  </section>
+
+                  {retorno.pontos.length > 0 && (
+                    <section className="candidatura-pontos">
+                      <strong>Pontos para fortalecer</strong>
+                      <ul>{retorno.pontos.map((ponto) => <li key={ponto}>{ponto}</li>)}</ul>
+                    </section>
+                  )}
+
+                  <section className="candidatura-proxima-acao">
+                    <strong>Próxima ação sugerida</strong>
+                    <h4>{retorno.proximaAcao.titulo}</h4>
+                    <p>{retorno.proximaAcao.descricao}</p>
+                    {retorno.status.tipo === 'nao-selecionado' && retorno.projetoSugerido.tecnologias.length > 0 && (
+                      <div className="candidatura-tags">
+                        {retorno.projetoSugerido.tecnologias.map((tecnologia) => <span key={tecnologia}>{tecnologia}</span>)}
+                      </div>
+                    )}
+                  </section>
+
+                  {retorno.status.tipo === 'nao-selecionado' && (retorno.cursos.length > 0 || retorno.trilhas.length > 0) && (
+                    <section className="candidatura-relacionados">
+                      <strong>Conteúdos que podem ajudar</strong>
+                      <div>
+                        {retorno.cursos.slice(0, 2).map((curso) => <Link key={curso.id} to={`/aluno/cursos/${curso.id}`}>{curso.titulo}</Link>)}
+                        {retorno.trilhas.slice(0, 1).map((trilha) => <Link key={trilha.id} to={`/aluno/cursos/${trilha.id}`}>{trilha.titulo}</Link>)}
+                      </div>
+                    </section>
+                  )}
+
+                  <footer>
+                    {vaga?.id && <Link className="botao botao-secondary" to={`/aluno/vagas/${vaga.id}`}>Ver vaga</Link>}
+                    <button
+                      className="botao botao-primary"
+                      type="button"
+                      onClick={() => {
+                        if (retorno.status.tipo === 'selecionado') {
+                          setCurriculoAberto(true)
+                          setCampoFocadoMentor('objetivoCurriculo')
+                        } else {
+                          setEditando(true)
+                          setCampoFocadoMentor('projetos')
+                        }
+                        window.setTimeout(() => rolarParaSecao('perfil-publico'), 0)
+                      }}
+                    >
+                      {retorno.status.tipo === 'selecionado' ? 'Revisar currículo' : 'Melhorar perfil'}
+                    </button>
                     <small>Última atualização: {candidatura.atualizadoEm}</small>
-                  </div>
-                )
-              })
+                  </footer>
+                </article>
+              ))
             ) : (
               <p>Nenhuma candidatura registrada ainda.</p>
             )}
@@ -1691,7 +1897,7 @@ export function PerfilAluno() {
       )}
 
       <MentorPaginaAlunoToast
-        mensagens={editando ? mensagensEditarPerfil : mensagensPerfil}
+        mensagens={editando ? mensagensEditarPerfil : mensagensPerfilComCandidaturas}
         mapaSecoes={editando ? mapaMentorEditarPerfil : mapaMentorPerfil}
         orientacaoContextual={orientacaoContextual}
         cenariosInteligentes={[

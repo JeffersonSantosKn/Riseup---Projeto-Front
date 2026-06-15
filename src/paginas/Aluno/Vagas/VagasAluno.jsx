@@ -12,12 +12,15 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Botao } from '../../../componentes/interface/Botao'
+import { RadarProntidaoCard } from '../../../componentes/candidaturas/RadarProntidaoCard'
 import { MentorPaginaAlunoToast } from '../../../componentes/interface/MentorPaginaAlunoToast'
 import { useApp } from '../../../contextos/AppContext'
 import { mensagensVagas } from '../../../dados/mensagensMentorAluno'
 import { filtrarVagas } from '../../../servicos/filtros'
 import { gerarExplicacaoVaga, montarContextoMentorAluno } from '../../../servicos/mentorIA'
 import { recomendarVagas } from '../../../servicos/recomendacoes'
+import { obterStatusCandidaturaAluno } from '../../../servicos/retornoCandidaturaAluno'
+import { calcularProntidaoParaVaga } from '../../../servicos/prontidaoCandidatura'
 
 const mapaMentorVagas = {
   filtros: 'vagas-filtros',
@@ -61,7 +64,6 @@ export function VagasAluno() {
   const [abaAtiva, setAbaAtiva] = useState('vaga')
   const selecionadaId = searchParams.get('vaga') || ''
   const vagaRefs = useRef(new Map())
-  const listaRef = useRef(null)
   const detalheRef = useRef(null)
   const candidaturasDoAluno = useMemo(
     () => candidaturas.filter((item) => item.alunoId === usuarioAtual?.id),
@@ -87,6 +89,7 @@ export function VagasAluno() {
   const filtradas = filtrarVagas(vagasComEmpresa, { termo: busca, data, modelo, local, cargo })
   const vagaAtiva = filtradas.find((vaga) => vaga.id === selecionadaId) || filtradas[0]
   const candidatura = candidaturasDoAluno.find((item) => item.vagaId === vagaAtiva?.id)
+  const prontidaoVaga = vagaAtiva ? calcularProntidaoParaVaga({ aluno: usuarioAtual, vaga: vagaAtiva }) : null
   const empresaAtiva = vagaAtiva?.empresa
   const contextoMentorVaga = vagaAtiva
     ? montarContextoMentorAluno({
@@ -106,13 +109,7 @@ export function VagasAluno() {
       if (emTelaPequena) {
         detalheRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-        if (cardSelecionado && listaRef.current) {
-          listaRef.current.scrollTo({
-            top: Math.max(cardSelecionado.offsetTop - 18, 0),
-            behavior: 'smooth',
-          })
-        }
+        cardSelecionado?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
       }
     }, 80)
 
@@ -167,7 +164,7 @@ export function VagasAluno() {
       </div>
 
       <div className="vagas-board">
-        <div className="vagas-lista" data-mentor-pagina-section="lista" ref={listaRef}>
+        <div className="vagas-lista" data-mentor-pagina-section="lista">
           <div className="vagas-tabs">
             <strong>Relevantes</strong>
             <span>Recentes</span>
@@ -260,6 +257,7 @@ export function VagasAluno() {
                   <CalendarDays size={16} /> {vagaAtiva.publicadaEm}
                 </span>
               </div>
+              <RadarProntidaoCard prontidao={prontidaoVaga} compacto mostrarChecklist titulo="Prontidão para esta vaga" />
               <div className="vaga-preview-actions">
                 {candidatura ? (
                   <Botao variant="secondary" onClick={() => cancelarCandidatura(vagaAtiva.id)}>
@@ -277,7 +275,7 @@ export function VagasAluno() {
                   <Share2 size={18} />
                 </button>
               </div>
-              {candidatura && <span className="vaga-candidatura-status">Candidatura: {candidatura.status}</span>}
+              {candidatura && <span className="vaga-candidatura-status">Candidatura: {obterStatusCandidaturaAluno(candidatura.status).rotulo}</span>}
             </header>
 
             <nav className="vaga-preview-tabs" aria-label="Seções da vaga">
@@ -413,6 +411,14 @@ export function VagasAluno() {
       <MentorPaginaAlunoToast
         mensagens={mensagensVagas}
         mapaSecoes={mapaMentorVagas}
+        orientacaoContextual={prontidaoVaga ? {
+          id: `radar-vaga-${vagaAtiva.id}`,
+          titulo: 'Prontidão para esta vaga',
+          resumo: prontidaoVaga.score >= 70
+            ? 'Seu perfil está bem preparado para esta vaga. Revise os dados antes de enviar.'
+            : 'Você pode se candidatar, mas seu perfil ficaria mais forte com as melhorias indicadas pelo radar.',
+          detalhe: `${prontidaoVaga.resumo} Próxima melhor ação: ${prontidaoVaga.proximaAcao.descricao}`,
+        } : null}
         cenariosInteligentes={
           vagaAtiva
             ? [

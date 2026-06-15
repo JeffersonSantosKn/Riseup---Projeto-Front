@@ -73,7 +73,7 @@ function previewEmpresa(form) {
 
 const ajudaCamposEmpresa = {
   nome: 'Como sua empresa e conhecida comercialmente no mercado.',
-  nomeOficial: 'A Razao Social ou nome juridico. Ex: Avanade Brasil Ltda.',
+  nomeOficial: 'A Razao Social ou nome juridico. Ex: NexaCloud Solutions Tecnologia Ltda.',
   logo: '2 letras para exibir quando nao houver imagem de logo. Ex: AV.',
   setor: 'Sua area principal de atuacao. Ex: Tecnologia, Financas, Saude.',
   descricaoCurta: 'Um slogan ou resumo rapido do seu proposito em uma linha.',

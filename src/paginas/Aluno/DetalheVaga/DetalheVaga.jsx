@@ -2,7 +2,10 @@ import { BriefcaseBusiness, CheckCircle2, MapPin, MessageSquare } from 'lucide-r
 import { useParams } from 'react-router-dom'
 import { Badge } from '../../../componentes/interface/Badge'
 import { Botao } from '../../../componentes/interface/Botao'
+import { RadarProntidaoCard } from '../../../componentes/candidaturas/RadarProntidaoCard'
 import { useApp } from '../../../contextos/AppContext'
+import { gerarRetornoCandidaturaAluno } from '../../../servicos/retornoCandidaturaAluno'
+import { calcularProntidaoParaVaga } from '../../../servicos/prontidaoCandidatura'
 
 export function DetalheVaga() {
   const { vagaId } = useParams()
@@ -10,6 +13,8 @@ export function DetalheVaga() {
   const vaga = vagasEmpresa.find((item) => item.id === vagaId)
   const empresa = empresas.find((item) => item.id === vaga?.empresaId)
   const candidatura = candidaturas.find((item) => item.vagaId === vagaId && item.alunoId === usuarioAtual?.id)
+  const retornoCandidatura = candidatura ? gerarRetornoCandidaturaAluno({ candidatura, vaga, empresa }) : null
+  const prontidaoVaga = vaga ? calcularProntidaoParaVaga({ aluno: usuarioAtual, vaga }) : null
 
   if (!vaga) return <section className="pagina">Vaga nao encontrada.</section>
 
@@ -31,6 +36,7 @@ export function DetalheVaga() {
             </span>
             <span>{vaga.salario}</span>
           </div>
+          <RadarProntidaoCard prontidao={prontidaoVaga} compacto mostrarChecklist titulo="Prontidão para esta vaga" />
           <div className="linha-acoes">
             {candidatura ? (
               <Botao variant="secondary" onClick={() => cancelarCandidatura(vaga.id)}>
@@ -46,17 +52,33 @@ export function DetalheVaga() {
             </Botao>
           </div>
           {candidatura && (
-            <div className="feedback-sucesso">
+            <div className="candidatura-status-discreto">
               <CheckCircle2 />
-              Candidatura registrada. Status: {candidatura.status}. Atualizado em {candidatura.atualizadoEm}.
+              <div>
+                <strong>{retornoCandidatura.status.rotulo}</strong>
+                <span>Candidatura atualizada em {candidatura.atualizadoEm}</span>
+              </div>
             </div>
           )}
         </div>
-        <aside className="empresa-box">
-          <span className="avatar avatar-grande">{empresa?.logo || 'UP'}</span>
-          <h3>{empresa?.nome}</h3>
-          <p>{empresa?.descricao}</p>
-          <small>{empresa?.localizacao}</small>
+        <aside className="empresa-box detalhe-vaga-empresa">
+          <div
+            className="detalhe-vaga-empresa-capa"
+            style={
+              empresa?.capaUrl
+                ? { backgroundImage: `linear-gradient(120deg, rgba(15, 23, 42, 0.12), rgba(15, 23, 42, 0.48)), url(${empresa.capaUrl})` }
+                : { background: empresa?.capa || 'linear-gradient(120deg, #0f172a, #2563eb)' }
+            }
+          >
+            <span className="detalhe-vaga-empresa-logo">
+              {empresa?.logoUrl ? <img src={empresa.logoUrl} alt={`Logo da ${empresa.nome}`} /> : empresa?.logo || 'UP'}
+            </span>
+          </div>
+          <div className="detalhe-vaga-empresa-conteudo">
+            <h3>{empresa?.nome}</h3>
+            <p>{empresa?.descricao}</p>
+            <small>{empresa?.localizacao}</small>
+          </div>
         </aside>
       </div>
 

@@ -1,5 +1,5 @@
-import { configIA } from '../config/ia'
 import { gerarFeedbackCandidatoFallback, validarFeedbackCandidato } from './analiseCandidaturaEmpresa'
+import { executarConteudoIAComFallback, TIPOS_IA } from './centralIA'
 import { listaEmpresa, normalizarTextoEmpresa } from './empresaInteligencia'
 
 const SYSTEM_PROMPT = `Você é um assistente de recrutamento da plataforma Trilum Conecta.
@@ -96,14 +96,6 @@ function linhas(valor) {
   return listaEmpresa(valor).slice(0, 12)
 }
 
-function endpointEhLocal(endpoint) {
-  try {
-    return ['localhost', '127.0.0.1', '[::1]'].includes(new URL(endpoint).hostname)
-  } catch {
-    return false
-  }
-}
-
 function familiaDaVaga(vaga = {}) {
   const contexto = normalizarTextoEmpresa([vaga.titulo, vaga.descricao, ...linhas(vaga.requisitos), ...linhas(vaga.atividades), ...linhas(vaga.tags)].join(' '))
   if (/devops|cloud|docker|linux|ci.?cd|infraestrutura/.test(contexto)) return 'devops'
@@ -166,18 +158,6 @@ export function gerarVagaFallback({ vaga = {}, empresa = {}, analiseAtual = {} }
   }
 }
 
-function extrairJson(valor = '') {
-  const limpo = String(valor).replace(/```(?:json)?|```/gi, '').trim()
-  const inicio = limpo.indexOf('{')
-  const fim = limpo.lastIndexOf('}')
-  if (inicio < 0 || fim <= inicio) return null
-  try {
-    return JSON.parse(limpo.slice(inicio, fim + 1))
-  } catch {
-    return null
-  }
-}
-
 function normalizarSugestao(sugestao = {}) {
   return {
     titulo: texto(sugestao.titulo, 100),
@@ -207,34 +187,6 @@ export function validarSugestaoVagaIA(sugestao, vaga = {}) {
   return true
 }
 
-async function chamarOllama(prompt, systemPrompt = SYSTEM_PROMPT) {
-  if (!configIA.habilitada || configIA.provedor !== 'ollama' || !endpointEhLocal(configIA.endpoint)) return null
-  const controller = new AbortController()
-  const timeout = window.setTimeout(() => controller.abort(), configIA.timeoutMs)
-  try {
-    const resposta = await fetch(configIA.endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: configIA.modelo,
-        stream: false,
-        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: prompt }],
-        options: { temperature: 0.25, num_predict: 900 },
-        format: 'json',
-      }),
-    })
-    if (!resposta.ok) return null
-    const dados = await resposta.json()
-    return extrairJson(dados?.message?.content)
-  } catch (erro) {
-    if (import.meta.env.DEV && configIA.habilitada) console.warn('Mentor da empresa indisponível; usando sugestão padrão.', erro)
-    return null
-  } finally {
-    window.clearTimeout(timeout)
-  }
-}
-
 export async function melhorarVagaComIA({ vaga = {}, empresa = {}, analiseAtual = {} } = {}) {
   const fallback = gerarVagaFallback({ vaga, empresa, analiseAtual })
   const contextoSeguro = {
@@ -249,11 +201,21 @@ export async function melhorarVagaComIA({ vaga = {}, empresa = {}, analiseAtual 
     },
     diagnostico: { erros: analiseAtual.erros || [], alertas: analiseAtual.alertas || [], sugestoes: analiseAtual.sugestoes || [] },
   }
-  const resposta = await chamarOllama(`Melhore somente os textos da vaga abaixo. Preserve tecnologias e fatos informados.
+  return executarConteudoIAComFallback({
+    tipo: TIPOS_IA.MELHORAR_VAGA,
+    contexto: contextoSeguro,
+    system: SYSTEM_PROMPT,
+    prompt: `Melhore somente os textos da vaga abaixo. Preserve tecnologias e fatos informados.
 Não inclua salário, benefícios, modalidade ou localização nos textos.
 Se algo não foi informado, registre apenas uma observação para a empresa revisar.
-Contexto: ${JSON.stringify(contextoSeguro)}`)
-  return validarSugestaoVagaIA(resposta, vaga) ? normalizarSugestao(resposta) : fallback
+Contexto: ${JSON.stringify(contextoSeguro)}`,
+    fallback,
+    formato: 'json',
+    camposObrigatorios: ['titulo', 'descricao', 'requisitos', 'atividades', 'tags'],
+    validarResposta: (resposta) => validarSugestaoVagaIA(resposta, vaga),
+    transformarResposta: normalizarSugestao,
+    opcoes: { temperature: 0.25, num_predict: 900 },
+  })
 }
 
 export function gerarSugestaoDescricaoVaga(contexto) {
@@ -417,12 +379,22 @@ export async function melhorarPerfilEmpresaComIA({ empresa = {}, analisePerfil =
       pontosFortes: analisePerfil.pontosFortes || [],
     },
   }
-  const resposta = await chamarOllama(`Melhore apenas os textos públicos do perfil abaixo.
+  return executarConteudoIAComFallback({
+    tipo: TIPOS_IA.MELHORAR_PERFIL_EMPRESA,
+    contexto: contextoSeguro,
+    system: SYSTEM_PROMPT_PERFIL,
+    prompt: `Melhore apenas os textos públicos do perfil abaixo.
 Preserve todos os fatos, tecnologias, especialidades e diferenciais informados.
 Não inclua links, localidades, tamanho, clientes, certificações ou benefícios que não estejam no contexto.
 Se faltar informação, registre uma observação para a empresa revisar.
-Contexto: ${JSON.stringify(contextoSeguro)}`, SYSTEM_PROMPT_PERFIL)
-  return validarSugestaoPerfilEmpresaIA(resposta, empresa) ? normalizarSugestaoPerfil(resposta) : fallback
+Contexto: ${JSON.stringify(contextoSeguro)}`,
+    fallback,
+    formato: 'json',
+    camposObrigatorios: ['descricaoCurta', 'descricaoEmpresa', 'especialidades', 'stackPratica', 'diferenciais'],
+    validarResposta: (resposta) => validarSugestaoPerfilEmpresaIA(resposta, empresa),
+    transformarResposta: normalizarSugestaoPerfil,
+    opcoes: { temperature: 0.25, num_predict: 900 },
+  })
 }
 
 export function gerarDescricaoCurtaEmpresa(contexto) {
@@ -484,13 +456,25 @@ export async function resumirDossieCandidatoComIA({ candidato = {}, vaga = {}, e
       riscos: analiseCompatibilidade.riscos || [],
     },
   }
-  const resposta = await chamarOllama(`Redija um resumo objetivo e uma recomendação interna cautelosa para o dossiê.
+  return executarConteudoIAComFallback({
+    tipo: TIPOS_IA.DOSSIE_CANDIDATO,
+    contexto: contextoSeguro,
+    system: SYSTEM_PROMPT_CANDIDATURA,
+    prompt: `Redija um resumo objetivo e uma recomendação interna cautelosa para o dossiê.
 Não altere a classificação nem as listas calculadas.
 Retorne JSON com resumo e recomendacaoInterna.
-Contexto: ${JSON.stringify(contextoSeguro)}`, SYSTEM_PROMPT_CANDIDATURA)
-  return validarRespostaDossieIA(resposta)
-    ? { resumo: texto(resposta.resumo, 700), recomendacaoInterna: texto(resposta.recomendacaoInterna, 700), origem: 'ia' }
-    : fallback
+Contexto: ${JSON.stringify(contextoSeguro)}`,
+    fallback,
+    formato: 'json',
+    camposObrigatorios: ['resumo', 'recomendacaoInterna'],
+    validarResposta: validarRespostaDossieIA,
+    transformarResposta: (resposta) => ({
+      resumo: texto(resposta.resumo, 700),
+      recomendacaoInterna: texto(resposta.recomendacaoInterna, 700),
+      origem: 'ia',
+    }),
+    opcoes: { temperature: 0.25, num_predict: 900 },
+  })
 }
 
 export async function gerarFeedbackCandidatoComIA({ candidato = {}, vaga = {}, status = 'rejeitado', motivo = '', analiseCompatibilidade = {} } = {}) {
@@ -503,10 +487,19 @@ export async function gerarFeedbackCandidatoComIA({ candidato = {}, vaga = {}, s
     compatibilidades: (analiseCompatibilidade.compatibilidades || []).slice(0, 5),
     lacunas: (analiseCompatibilidade.lacunas || []).slice(0, 5),
   }
-  const resposta = await chamarOllama(`Crie um feedback curto, educado e revisável para a pessoa candidata.
+  return executarConteudoIAComFallback({
+    tipo: TIPOS_IA.FEEDBACK_CANDIDATO,
+    contexto: contextoSeguro,
+    system: SYSTEM_PROMPT_CANDIDATURA,
+    prompt: `Crie um feedback curto, educado e revisável para a pessoa candidata.
 Não exponha score, não prometa contratação e não mencione dados internos.
 Retorne JSON com feedback.
-Contexto: ${JSON.stringify(contextoSeguro)}`, SYSTEM_PROMPT_CANDIDATURA)
-  const feedback = texto(resposta?.feedback, 900)
-  return validarFeedbackCandidato(feedback) ? feedback : fallback
+Contexto: ${JSON.stringify(contextoSeguro)}`,
+    fallback,
+    formato: 'json',
+    camposObrigatorios: ['feedback'],
+    validarResposta: (resposta) => validarFeedbackCandidato(texto(resposta?.feedback, 900)),
+    transformarResposta: (resposta) => texto(resposta.feedback, 900),
+    opcoes: { temperature: 0.25, num_predict: 900 },
+  })
 }

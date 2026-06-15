@@ -1,8 +1,18 @@
 # Trilum Conecta
 
-**Trilum Conecta** é uma plataforma front-end de orientação de carreira em tecnologia. O MVP simula a jornada de alunos e empresas com cadastro, login local, recomendações, cursos, vagas, candidaturas, perfil profissional, certificados e geração de currículo.
+## Página pública do Coday 2026.1
 
-O projeto não usa API externa de IA. O mentor, as validações e as recomendações funcionam por regras locais, dados mockados e informações salvas no navegador.
+A apresentação possui uma página pública com acesso ao projeto, contas de demonstração e
+materiais:
+
+* **Produção:** [https://jeffersonsantoskn.github.io/Trilum-Conecta/#/coday](https://jeffersonsantoskn.github.io/Trilum-Conecta/#/coday)
+* **Local:** `http://localhost:5173/Trilum-Conecta/#/coday`
+
+Para QR Codes, use sempre a URL completa com `#/coday`.
+
+**Trilum Conecta** é uma plataforma front-end que conecta aprendizado, construção de evidências e oportunidades em tecnologia. O produto atende alunos/candidatos e empresas/recrutadores em uma jornada integrada: diagnóstico inicial, recomendações explicáveis, evolução de perfil, projetos práticos, candidaturas e análise contextual de candidatos.
+
+As regras do sistema são a fonte de verdade. Pontuações, recomendações, radar, qualidade de vagas e compatibilidade são calculados localmente. Uma camada opcional de IA local via Ollama pode melhorar textos e explicações, mas nunca decide recomendações, aprova candidatos ou altera dados automaticamente.
 
 ## Acesso da Demo
 
@@ -12,37 +22,62 @@ Versão publicada no GitHub Pages:
 
 > **Nota:** Use o link com `#/`, pois o projeto usa `HashRouter` para funcionar corretamente no GitHub Pages.
 
-### Contas prontas para apresentação:
+### Contas prontas para apresentação
 
-**Empresa Avanade**
+**Empresa NexaCloud Solutions**
 
-* **E-mail:** avanade@riseup.demo
-* **Senha:** Avanade@123
+* **E-mail:** empresa.demo@trilum.demo
+* **Senha:** Empresa@123
 
-**Aluno Jefferson Santos**
+**Aluno Lucas Andrade**
 
-* **E-mail:** jefferson@riseup.demo
-* **Senha:** Jefferson@123
+* **E-mail:** aluno.demo@trilum.demo
+* **Senha:** Aluno@123
+* **Cenário:** aluno DevOps em formação, com perfil demonstrativo e pontos de melhoria guiados pelo mentor.
 
-**Observação:** Jefferson Santos já aparece como candidato em uma vaga da Avanade, para permitir testar rapidamente a visualização de perfil e a exportação de currículo pelo lado da empresa.
+**Observação:** Lucas Andrade já aparece como candidato em vagas da NexaCloud Solutions, permitindo testar rapidamente a visualização de perfil, o dossiê do candidato, o radar de prontidão, o retorno de candidatura e a exportação de currículo pelo lado da empresa.
+
+Todos os dados das contas demonstrativas são fictícios e foram criados apenas para apresentação do projeto.
 
 ## Funcionalidades
+
+### Jornada do aluno
 
 * **Landing page institucional** com apresentação da plataforma, equipe e mentor contextual.
 * **Cadastro e login local** para aluno e empresa.
 * **Validação guiada** por mentor em login/cadastro.
-* **Wizard do aluno** para personalizar trilhas, cursos e vagas.
-* **Catálogo** de cursos, trilhas, módulos e aulas.
+* **Wizard diagnóstico** que coleta área desejada, foco de carreira, experiência, tecnologias, objetivo e disponibilidade.
+* **Recomendador por regras e pesos** para priorizar trilhas, cursos e vagas coerentes com o perfil.
+* **Trilhas organizadas por famílias**, com conteúdo principal, pré-requisitos e complementos.
+* **Catálogo** de cursos, trilhas, módulos, aulas e progresso individual.
 * **Registro local** de progresso por usuário.
 * **Certificados Trilum** para cursos concluídos.
-* **Perfil público do aluno** com tecnologias, idiomas, formação, projetos, experiências e anexos de certificados externos.
-* **Gerador de currículo inteligente** com preview, copiar texto e exportação em PDF.
+* **Mentor contextual** que acompanha página, seção, filtros, cursos, vagas, perfil e currículo.
+* **Perfil público assistido** com tecnologias, idiomas, formação, projetos, experiências e certificados externos.
+* **Gerador de currículo** com preview, copiar texto, exportação em PDF e orientações de preenchimento.
+* **Projetos práticos sugeridos** conectando cursos e trilhas a GitHub, deploy e evidências para o perfil.
+* **Radar de prontidão para candidatura** com score orientativo, pontos fortes, lacunas e próxima melhor ação.
+* **Retorno profissional das candidaturas**, com status cuidadosos, feedback público e sugestões de evolução.
+
+### Jornada da empresa
+
 * **Área da empresa** com perfil institucional, criação de vagas, gerenciamento, preview da vaga e lista de candidatos.
-* **Empresas e vagas mockadas**, incluindo Avanade, Microsoft e Apple.
+* **Empresas e vagas mockadas**, incluindo a empresa demonstrativa NexaCloud Solutions.
 * **Visualização de empresa na vaga** com logo, capa, descrição e dados institucionais.
+* **Força do perfil da empresa** com pontos fortes e próximos ajustes.
+* **Raio-X da vaga** com qualidade, atratividade, coerência, erros, alertas e sugestões.
+* **Melhoria assistida de vagas e perfil institucional**, sempre revisável antes de aplicar.
+* **Dossiê do candidato** com compatibilidades, lacunas, evidências e recomendação interna cautelosa.
+* **Feedback assistido de candidatura**, separado de observações internas e compartilhado apenas após revisão.
 * **Exportação do currículo atualizado** do candidato pela empresa.
 * **Mentor da empresa** com dicas sobre perfil, vagas, tags, compatibilidade e candidatos.
 * **Mentor compactável:** ao fechar, ele vira um botão flutuante e pode ser reaberto sem atualizar a página.
+
+### Coday e demonstração
+
+* **Página pública do Coday** com acesso ao projeto, contas demo, apresentação e documentação visual.
+* **Login demo autocompletado** ao entrar pela página Coday.
+* **Massa fictícia integrada** entre Lucas Andrade e NexaCloud Solutions para demonstrar o fluxo completo.
 
 ## Roteiro Rápido de Teste
 
@@ -52,10 +87,11 @@ Versão publicada no GitHub Pages:
 2. Entre em **Cadastrar** e crie uma conta de aluno.
 3. Observe o mentor de validação nos campos obrigatórios e na senha.
 4. Complete o wizard para receber recomendações.
-5. Acesse cursos e trilhas recomendadas.
-6. Abra uma vaga e confira a aba *Vaga* e a aba *Empresa*.
-7. Edite o perfil público do aluno.
-8. Abra **Meu Currículo**, confira o preview e teste copiar texto/exportar PDF.
+5. Confira o painel, o mentor e o radar de candidatura.
+6. Acesse cursos, trilhas e projetos práticos sugeridos.
+7. Abra uma vaga e confira prontidão, vaga e empresa.
+8. Edite o perfil público e abra **Meu Currículo**.
+9. Veja candidaturas e o retorno profissional da empresa.
 
 ### Empresa
 
@@ -64,7 +100,8 @@ Versão publicada no GitHub Pages:
 3. Edite o perfil institucional da empresa.
 4. Use a vaga demo criada automaticamente no cadastro ou crie uma nova vaga.
 5. Abra a lista de candidatos da vaga demo.
-6. Clique em *Rafael Souza* ou *Jefferson Santos* e teste a exportação do currículo atualizado.
+6. Abra a vaga **Analista DevOps Júnior** e clique em *Lucas Andrade*.
+7. Confira o dossiê, currículo, evidências e feedback assistido.
 
 > Ao cadastrar uma nova empresa, a plataforma cria automaticamente uma vaga demo editável e um candidato fictício com perfil completo. Isso permite testar o gerenciamento de vaga, ver o perfil do candidato, alterar o status e exportar o currículo sem precisar cadastrar um aluno antes.
 
@@ -131,16 +168,22 @@ O MVP usa dados mockados e `localStorage`. Isso permite testar cadastro, login, 
 
 Os dados ficam salvos no navegador usado no teste. Para reiniciar a demo, limpe o armazenamento local do site nas ferramentas do navegador.
 
+Quando a massa de demonstração é atualizada, o projeto sincroniza automaticamente as contas oficiais da demo. Dados personalizados criados no navegador continuam preservados sempre que possível.
+
 ## Mentor IA local opcional
 
-O projeto possui uma camada opcional de explicações personalizadas com Ollama local. O recomendador por regras continua decidindo cursos, trilhas e vagas; o mentor apenas explica os resultados e usa dicas padrão quando a IA local está desativada ou indisponível.
+O projeto possui uma camada opcional de explicações e redação assistida com Ollama local. Ela pode melhorar orientações do mentor, textos de vagas e perfil da empresa, resumos de dossiê e feedbacks. O recomendador por regras continua decidindo cursos, trilhas e vagas; radar, qualidade e compatibilidade também continuam determinísticos.
+
+No deploy público, todas as funcionalidades continuam disponíveis com regras e fallbacks. A build tenta usar a IA local, mas a geração via Ollama depende do Ollama instalado e executando no computador do visitante, do modelo `gemma3:1b` disponível e da origem pública autorizada na configuração local do Ollama. Sem isso, o fallback é usado automaticamente.
 
 Veja configuração, proteções e testes em [docs/MENTOR_IA.md](docs/MENTOR_IA.md).
 
 ## Observações Para Avaliação
 
 * As recomendações de cursos, trilhas e vagas são baseadas em regras manuais.
+* A IA é opcional e usada apenas para redação e explicação; nenhuma decisão depende dela.
 * As tags das vagas influenciam a compatibilidade com alunos.
+* Radar e dossiê são apoios orientativos e não bloqueiam candidaturas nem substituem análise humana.
 * O currículo exportado usa os dados atuais do perfil do aluno.
 * A primeira abertura no GitHub Pages pode demorar alguns segundos para carregar imagens maiores do mentor.
 * O projeto é um MVP front-end; dados criados durante o teste ficam apenas no navegador.

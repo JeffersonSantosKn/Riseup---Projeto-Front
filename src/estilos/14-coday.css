@@ -1,0 +1,293 @@
+.coday-page {
+  --coday-blue: #2563eb;
+  --coday-blue-dark: #1546b8;
+  --coday-ink: #101828;
+  --coday-muted: #526079;
+  --coday-line: #d9e2f2;
+  min-height: 100vh;
+  color: var(--coday-ink);
+  background:
+    radial-gradient(circle at 12% 8%, rgb(37 99 235 / 13%), transparent 28rem),
+    radial-gradient(circle at 88% 22%, rgb(14 165 233 / 10%), transparent 24rem),
+    #f7f9fd;
+}
+
+.coday-page *, .coday-page *::before, .coday-page *::after { box-sizing: border-box; }
+
+.coday-header, .coday-page main, .coday-footer {
+  width: min(1180px, calc(100% - 40px));
+  margin-inline: auto;
+}
+
+.coday-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 86px;
+}
+
+.coday-brand, .coday-header-link, .coday-primary-button, .coday-secondary-button,
+.coday-card-action, .coday-material-card a { text-decoration: none; }
+
+.coday-brand {
+  display: inline-flex;
+  gap: 11px;
+  align-items: center;
+  color: var(--coday-ink);
+  font-weight: 900;
+  letter-spacing: .02em;
+}
+
+.coday-brand img { width: 46px; height: 46px; object-fit: contain; }
+
+#contas-demo { scroll-margin-top: 28px; }
+#titulo-contas-demo:focus { outline: none; }
+
+.coday-header-link {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  color: var(--coday-blue-dark);
+  font-weight: 800;
+}
+
+.coday-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(330px, .85fr);
+  gap: clamp(40px, 7vw, 92px);
+  align-items: center;
+  min-height: min(680px, calc(100vh - 86px));
+  padding: 70px 0 90px;
+}
+
+.coday-eyebrow, .coday-section-kicker, .coday-card-kicker, .coday-journey-label {
+  color: var(--coday-blue-dark);
+  font-size: .76rem;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.coday-eyebrow {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid #bcd0f8;
+  background: rgb(255 255 255 / 72%);
+}
+
+.coday-hero h1 {
+  max-width: 760px;
+  margin: 24px 0 20px;
+  font-size: clamp(3rem, 6vw, 5.9rem);
+  line-height: .98;
+  letter-spacing: -.065em;
+}
+
+.coday-hero-lead {
+  max-width: 720px;
+  margin: 0;
+  color: #34415a;
+  font-size: clamp(1.18rem, 2vw, 1.55rem);
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+.coday-hero-support, .coday-section-heading p, .coday-access-section p, .coday-notice p {
+  color: var(--coday-muted);
+  line-height: 1.65;
+}
+
+.coday-hero-support { max-width: 650px; margin: 17px 0 0; }
+.coday-hero-actions, .coday-access-section { display: flex; gap: 12px; align-items: center; }
+.coday-hero-actions { flex-wrap: wrap; margin-top: 32px; }
+
+.coday-primary-button, .coday-secondary-button, .coday-card-action {
+  display: inline-flex;
+  gap: 9px;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 1px solid var(--coday-blue);
+  font-weight: 850;
+  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.coday-primary-button { color: #fff; background: var(--coday-blue); box-shadow: 0 14px 26px rgb(37 99 235 / 20%); }
+.coday-secondary-button, .coday-card-action { color: var(--coday-blue-dark); background: rgb(255 255 255 / 80%); }
+.coday-primary-button:hover, .coday-secondary-button:hover, .coday-card-action:hover { transform: translateY(-2px); }
+.coday-primary-button:hover { background: var(--coday-blue-dark); }
+
+.coday-journey {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  padding: clamp(24px, 4vw, 42px);
+  overflow: hidden;
+  color: #fff;
+  background: linear-gradient(145deg, rgb(255 255 255 / 9%), transparent 55%), #12203a;
+  box-shadow: 22px 24px 0 #dbe7ff;
+}
+
+.coday-journey::after {
+  position: absolute;
+  right: -70px;
+  bottom: -90px;
+  width: 220px;
+  height: 220px;
+  border: 36px solid rgb(96 165 250 / 17%);
+  border-radius: 50%;
+  content: '';
+}
+
+.coday-journey-label { margin-bottom: 10px; color: #8fc3ff; }
+.coday-journey-step {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 15px;
+  padding: 18px 0;
+  border-top: 1px solid rgb(255 255 255 / 16%);
+}
+.coday-journey-step > span { color: #8fc3ff; font-size: .76rem; font-weight: 900; }
+.coday-journey-step strong { font-size: 1.06rem; }
+.coday-journey-step p { margin: 7px 0 0; color: #c7d4e8; font-size: .92rem; line-height: 1.5; }
+
+.coday-section { margin-bottom: 92px; }
+.coday-access-section {
+  justify-content: space-between;
+  padding: clamp(28px, 5vw, 52px);
+  border: 1px solid var(--coday-line);
+  background: #fff;
+  box-shadow: 0 24px 60px rgb(27 58 112 / 9%);
+}
+.coday-access-section > div { max-width: 720px; }
+.coday-section h2 { margin: 9px 0 12px; font-size: clamp(2rem, 4vw, 3.2rem); line-height: 1.05; letter-spacing: -.045em; }
+.coday-section-heading { max-width: 710px; margin-bottom: 28px; }
+.coday-section-heading p, .coday-access-section p, .coday-notice p { margin: 0; }
+
+.coday-demo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.coday-demo-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: clamp(24px, 4vw, 38px);
+  border: 1px solid var(--coday-line);
+  background: #fff;
+  box-shadow: 0 16px 44px rgb(27 58 112 / 7%);
+}
+
+.coday-card-icon, .coday-material-icon, .coday-notice-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 24px;
+  color: var(--coday-blue);
+  background: #eaf1ff;
+}
+
+.coday-demo-card h3, .coday-material-card h3 { margin: 8px 0; font-size: 1.45rem; letter-spacing: -.025em; }
+.coday-demo-card > p, .coday-material-card p { margin: 0; color: var(--coday-muted); line-height: 1.6; }
+.coday-credentials { display: grid; gap: 12px; margin: 28px 0; }
+.coday-credentials > div { padding: 13px 14px; border: 1px solid #dfe7f4; background: #f8faff; }
+.coday-credentials dt { margin-bottom: 7px; color: #68758d; font-size: .72rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+.coday-credentials dd { display: flex; gap: 12px; align-items: center; justify-content: space-between; min-width: 0; margin: 0; }
+.coday-credentials code, .coday-footer code { overflow-wrap: anywhere; color: #263b62; font-family: inherit; font-size: .92rem; font-weight: 800; }
+
+.coday-copy-button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 6px;
+  align-items: center;
+  padding: 7px 9px;
+  border: 1px solid #bfd0ee;
+  color: var(--coday-blue-dark);
+  background: #fff;
+  font: inherit;
+  font-size: .77rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+.coday-copy-button.is-copied { border-color: #86d5b1; color: #087443; background: #edfff6; }
+.coday-card-action { width: 100%; margin-top: auto; }
+
+.coday-materials-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.coday-material-card {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-width: 0;
+  min-height: 275px;
+  padding: 26px;
+  border: 1px solid var(--coday-line);
+  background: #fff;
+}
+.coday-material-card a, .coday-coming-soon {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  width: fit-content;
+  margin-top: 22px;
+  color: var(--coday-blue-dark);
+  font-size: .86rem;
+  font-weight: 850;
+}
+.coday-coming-soon { padding: 6px 9px; color: #59677d; background: #edf1f7; }
+
+.coday-notice {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 22px;
+  padding: clamp(26px, 5vw, 48px);
+  border: 1px solid #b9ccef;
+  background: #eaf2ff;
+}
+.coday-notice-icon { margin: 0; color: #fff; background: var(--coday-blue); }
+
+.coday-footer {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 0 38px;
+  border-top: 1px solid var(--coday-line);
+  color: var(--coday-muted);
+  font-size: .86rem;
+}
+.coday-footer div { display: grid; gap: 5px; }
+.coday-footer strong { color: var(--coday-ink); }
+.coday-footer p { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; margin: 0; }
+.coday-page a:focus-visible, .coday-page button:focus-visible { outline: 3px solid #6ea5ff; outline-offset: 4px; }
+
+@media (max-width: 900px) {
+  .coday-hero { grid-template-columns: 1fr; min-height: auto; padding: 56px 0 80px; }
+  .coday-journey { box-shadow: 14px 14px 0 #dbe7ff; }
+  .coday-access-section { align-items: flex-start; flex-direction: column; }
+  .coday-materials-grid { grid-template-columns: 1fr; }
+  .coday-material-card { min-height: auto; }
+}
+
+@media (max-width: 680px) {
+  .coday-header, .coday-page main, .coday-footer { width: min(100% - 28px, 1180px); }
+  .coday-header { min-height: 72px; }
+  .coday-brand img { width: 39px; height: 39px; }
+  .coday-header-link { font-size: 0; }
+  .coday-header-link svg { width: 21px; height: 21px; }
+  .coday-hero { gap: 42px; padding: 36px 0 68px; }
+  .coday-hero h1 { font-size: clamp(2.65rem, 15vw, 4.2rem); }
+  .coday-hero-actions, .coday-hero-actions a, .coday-access-section .coday-primary-button { width: 100%; }
+  .coday-section { margin-bottom: 64px; }
+  .coday-demo-grid { grid-template-columns: 1fr; }
+  .coday-credentials dd { align-items: stretch; flex-direction: column; }
+  .coday-copy-button { justify-content: center; width: 100%; }
+  .coday-notice { grid-template-columns: 1fr; }
+  .coday-footer { align-items: flex-start; flex-direction: column; }
+  .coday-footer p { justify-content: flex-start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coday-page *, .coday-page *::before, .coday-page *::after { transition-duration: .01ms !important; }
+}

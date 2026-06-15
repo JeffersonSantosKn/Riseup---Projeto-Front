@@ -1,7 +1,7 @@
-import { configIA } from '../config/ia'
 import { cursos as catalogoCursos } from '../dados/cursos'
 import { trilhas as catalogoTrilhas } from '../dados/trilhas'
 import { vagas as catalogoVagas } from '../dados/vagas'
+import { executarIAComSeguranca, iaEstaDisponivel, TIPOS_IA } from './centralIA'
 
 const SYSTEM_PROMPT = `Você é o Mentor Inteligente da plataforma Trilum Conecta.
 Sua função é explicar recomendações de cursos, trilhas, vagas e currículo para alunos de tecnologia.
@@ -113,15 +113,6 @@ export function montarContextoMentorAluno({
       projetos: lista(curriculo.projetos, 6).map((item) => texto(item, 140)),
       certificados: lista(curriculo.certificados, 8).map((item) => texto(item?.titulo || item, 120)),
     },
-  }
-}
-
-function endpointEhLocal(endpoint) {
-  try {
-    const url = new URL(endpoint)
-    return ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
-  } catch {
-    return false
   }
 }
 
@@ -309,63 +300,12 @@ Contexto:
 ${JSON.stringify(contextoSeguro)}`
 }
 
-async function chamarOllama({ prompt }) {
-  if (!configIA.habilitada || configIA.provedor !== 'ollama' || !endpointEhLocal(configIA.endpoint)) return ''
-
-  const controller = new AbortController()
-  const timeout = window.setTimeout(() => controller.abort(), configIA.timeoutMs)
-
-  try {
-    const resposta = await fetch(configIA.endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: configIA.modelo,
-        stream: false,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: prompt },
-        ],
-        options: {
-          temperature: 0.2,
-          num_predict: 180,
-        },
-      }),
-    })
-
-    if (!resposta.ok) return ''
-    const dados = await resposta.json()
-    return normalizarResposta(dados?.message?.content)
-  } catch (erro) {
-    if (import.meta.env.DEV && configIA.habilitada) {
-      console.warn('Mentor local indisponível; usando dica padrão.', erro)
-    }
-    return ''
-  } finally {
-    window.clearTimeout(timeout)
-  }
-}
-
 export async function iaDisponivel() {
-  if (!configIA.habilitada || !endpointEhLocal(configIA.endpoint)) return false
-  const endpointStatus = configIA.endpoint.replace(/\/api\/chat\/?$/, '/api/tags')
-  const controller = new AbortController()
-  const timeout = window.setTimeout(() => controller.abort(), Math.min(configIA.timeoutMs, 2500))
-
-  try {
-    const resposta = await fetch(endpointStatus, { signal: controller.signal })
-    return resposta.ok
-  } catch {
-    return false
-  } finally {
-    window.clearTimeout(timeout)
-  }
+  return iaEstaDisponivel()
 }
 
 async function gerarComMentor(cenario, contexto = {}, { atualizar = false } = {}) {
   const fallback = gerarTextoFallback(contexto, cenario)
-  if (!configIA.habilitada) return fallback
 
   const chave = chaveCache(cenario, contexto)
   if (!atualizar) {
@@ -373,12 +313,21 @@ async function gerarComMentor(cenario, contexto = {}, { atualizar = false } = {}
     if (cache) return cache
   }
 
-  const resposta = await chamarOllama({ prompt: promptDoCenario(cenario, contexto) })
   const limite = limitesPorCenario[cenario] || 600
-  if (!respostaValida(resposta, contexto, limite, cenario)) return fallback
+  const resultado = await executarIAComSeguranca({
+    tipo: cenario === 'empresa' ? TIPOS_IA.MENTOR_EMPRESA : TIPOS_IA.MENTOR_ALUNO,
+    contexto,
+    system: SYSTEM_PROMPT,
+    criarPrompt: () => promptDoCenario(cenario, contexto),
+    fallback,
+    maxCaracteres: limite,
+    validarResposta: (resposta) => respostaValida(normalizarResposta(resposta), contexto, limite, cenario),
+    transformarResposta: normalizarResposta,
+    opcoes: { temperature: 0.2, num_predict: 180 },
+  })
 
-  salvarCache(chave, resposta)
-  return resposta
+  if (resultado.origem === 'ia') salvarCache(chave, resultado.conteudo)
+  return resultado.conteudo
 }
 
 export function gerarExplicacaoRecomendacoes(contexto, opcoes) {

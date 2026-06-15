@@ -33,6 +33,9 @@ function textoCandidato(candidato = {}) {
     ...itens(candidato.cursos),
     ...itens(candidato.cursosConcluidos),
     ...itens(candidato.certificados),
+    ...(candidato.projetosPraticos || [])
+      .filter((projeto) => projeto.status === 'concluido' && (projeto.github || projeto.deploy))
+      .flatMap((projeto) => [projeto.titulo, projeto.descricao, ...(projeto.tecnologias || [])]),
     candidato.perfilProfissional?.tecnologiasComNivel,
     candidato.perfilProfissional?.projetos,
     candidato.perfilProfissional?.experiencias,
@@ -57,6 +60,9 @@ function evidenciaPerfil(candidato = {}) {
   const cursos = unicos([...itens(candidato.cursos), ...itens(candidato.cursosConcluidos)])
   const certificados = itens(candidato.certificados)
   const projetos = candidato.perfilProfissional?.projetos || candidato.curriculo?.projetos
+  const projetosPraticos = Array.isArray(candidato.projetosPraticos)
+    ? candidato.projetosPraticos.filter((projeto) => projeto.status === 'concluido' && (projeto.github || projeto.deploy))
+    : []
   const experiencias = candidato.perfilProfissional?.experiencias || candidato.curriculo?.experiencias
   const github = candidato.perfilProfissional?.github || candidato.curriculo?.github
   const linkedin = candidato.perfilProfissional?.linkedin || candidato.curriculo?.linkedin
@@ -64,6 +70,7 @@ function evidenciaPerfil(candidato = {}) {
   if (cursos.length) evidencias.push(`${cursos.length} curso${cursos.length === 1 ? '' : 's'} ou trilha${cursos.length === 1 ? '' : 's'} no perfil`)
   if (certificados.length) evidencias.push(`${certificados.length} certificado${certificados.length === 1 ? '' : 's'} registrado${certificados.length === 1 ? '' : 's'}`)
   if (possui(projetos)) evidencias.push('Projetos descritos no perfil')
+  if (projetosPraticos.length) evidencias.push(`${projetosPraticos.length} projeto${projetosPraticos.length === 1 ? '' : 's'} prático${projetosPraticos.length === 1 ? '' : 's'} com evidência`)
   if (possui(experiencias)) evidencias.push('Experiências descritas no perfil')
   if (possui(github)) evidencias.push('GitHub informado')
   if (possui(linkedin)) evidencias.push('LinkedIn informado')
@@ -72,6 +79,8 @@ function evidenciaPerfil(candidato = {}) {
 }
 
 function dadosSuficientes(candidato = {}, evidencias = []) {
+  const possuiProjetoPratico = Array.isArray(candidato.projetosPraticos)
+    && candidato.projetosPraticos.some((projeto) => projeto.status === 'concluido' && (projeto.github || projeto.deploy))
   const sinais = [
     itens(candidato.tecnologias).length,
     itens(candidato.cursos).length,
@@ -79,7 +88,7 @@ function dadosSuficientes(candidato = {}, evidencias = []) {
     itens(candidato.certificados).length,
     possui(candidato.bio),
     possui(candidato.curriculo?.resumo),
-    possui(candidato.perfilProfissional?.projetos || candidato.curriculo?.projetos),
+    possui(candidato.perfilProfissional?.projetos || candidato.curriculo?.projetos) || possuiProjetoPratico,
     evidencias.length,
   ].filter(Boolean)
   return sinais.length >= 3
@@ -102,7 +111,7 @@ export function analisarCompatibilidadeCandidatoVaga({ candidato = {}, vaga = {}
   const suficiente = dadosSuficientes(candidato, evidencias)
   const riscos = []
 
-  if (!possui(candidato.perfilProfissional?.projetos || candidato.curriculo?.projetos)) riscos.push('Pouca evidência prática de projetos no perfil')
+  if (!possui(candidato.perfilProfissional?.projetos || candidato.curriculo?.projetos) && !evidencias.some((item) => item.includes('projeto'))) riscos.push('Pouca evidência prática de projetos no perfil')
   if (!possui(candidato.perfilProfissional?.github || candidato.curriculo?.github)) riscos.push('GitHub não informado')
   if (!possui(candidato.curriculo?.objetivo) || !possui(candidato.curriculo?.resumo)) riscos.push('Currículo ainda pode ser mais específico')
 

@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { LockKeyhole, Mail } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Info, LockKeyhole, Mail, X } from 'lucide-react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { AuthSplitLayout } from '../../componentes/autenticacao/AuthSplitLayout'
 import { MentorCompactadoButton } from '../../componentes/interface/MentorCompactadoButton'
 import { MentorFeedback } from '../../componentes/interface/MentorFeedback'
@@ -14,10 +14,29 @@ const estadoRecuperacaoInicial = {
   repetirSenha: '',
 }
 
+const contasDemo = {
+  aluno: {
+    email: 'aluno.demo@trilum.demo',
+    senha: 'Aluno@123',
+    nome: 'Lucas Andrade',
+  },
+  empresa: {
+    email: 'empresa.demo@trilum.demo',
+    senha: 'Empresa@123',
+    nome: 'NexaCloud Solutions',
+  },
+}
+
 export function Login() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { login, redefinirSenha } = useApp()
-  const [form, setForm] = useState({ email: '', senha: '' })
+  const demoId = searchParams.get('demo')
+  const contaDemo = contasDemo[demoId]
+  const [form, setForm] = useState(() => contaDemo
+    ? { email: contaDemo.email, senha: contaDemo.senha }
+    : { email: '', senha: '' })
+  const [avisoDemoVisivel, setAvisoDemoVisivel] = useState(Boolean(contaDemo))
   const [recuperacao, setRecuperacao] = useState(estadoRecuperacaoInicial)
   const [modoRecuperacao, setModoRecuperacao] = useState(false)
   const [erroConta, setErroConta] = useState('')
@@ -139,6 +158,19 @@ export function Login() {
             {modoRecuperacao ? 'Crie uma nova senha para sua conta cadastrada' : 'Entre para continuar sua jornada'}
           </p>
           </header>
+
+          {!modoRecuperacao && avisoDemoVisivel && contaDemo && (
+            <div className="auth-demo-notice" role="status">
+              <Info size={18} aria-hidden="true" />
+              <p>
+                <strong>Conta de demonstração preparada</strong>
+                Os dados de {contaDemo.nome} foram preenchidos porque você chegou pelo acesso do Coday.
+              </p>
+              <button type="button" onClick={() => setAvisoDemoVisivel(false)} aria-label="Fechar aviso">
+                <X size={16} aria-hidden="true" />
+              </button>
+            </div>
+          )}
 
           {!modoRecuperacao ? (
             <>

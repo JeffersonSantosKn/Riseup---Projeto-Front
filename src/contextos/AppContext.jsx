@@ -9,25 +9,40 @@ const AppContext = createContext(null)
 
 const candidaturaInicial = [
   {
-    id: 'cand-app-demo-jefferson-avanade',
+    id: 'cand-app-demo-lucas-devops',
     vagaId: 'vaga-1',
     alunoId: 'aluno-1',
-    status: 'Candidatura enviada',
-    atualizadoEm: '01/06/2026 09:00:00',
+    status: 'Em análise',
+    atualizadoEm: '10/06/2026 09:00:00',
+  },
+  {
+    id: 'cand-app-demo-lucas-frontend',
+    vagaId: 'vaga-6',
+    alunoId: 'aluno-1',
+    status: 'Rejeitado',
+    atualizadoEm: '11/06/2026 14:30:00',
+    feedbackPublicoAluno:
+      'Agradecemos sua candidatura. Neste momento, seguimos com perfis mais alinhados a Front-end, especialmente com mais evidências práticas em React e TypeScript. Recomendamos fortalecer projetos nessa stack e manter seu perfil atualizado para futuras oportunidades.',
+    observacaoInterna:
+      'Perfil interessante para DevOps, mas pouco alinhado à vaga Front-end atual. Considerar para vagas de Cloud ou infraestrutura.',
+    motivoInterno: 'Pouca evidência prática em React e TypeScript',
   },
 ]
 
 const DEMO_ALUNO_ID = 'aluno-1'
 const DEMO_EMPRESA_ID = 'empresa-1'
 const CONTAS_MOCK_LOGIN = new Set(['empresa-2'])
-const CHAVE_RESET_WIZARD_DEMO = 'demoWizardResetadoV2'
-const CHAVE_DEMO_ALUNO_PERFIL = 'demoAlunoPerfilAtualizadoV3'
-const CHAVE_AVANADE_EMPRESA = 'avanadeEmpresaAtualizadaV4'
-const CHAVE_AVANADE_VAGAS = 'avanadeVagasAtualizadasV5'
-const CHAVE_AVANADE_CANDIDATOS = 'avanadeCandidatosAtualizadosV4'
-const CHAVE_DEMO_CANDIDATURAS = 'demoCandidaturasAtualizadasV1'
+const CHAVE_RESET_WIZARD_DEMO = 'demoLucasWizardAtualizadoV1'
+const CHAVE_DEMO_ALUNO_PERFIL = 'demoLucasPerfilEmEvolucaoCodayV4'
+const CHAVE_EMPRESA_DEMO = 'demoNexaCloudEmpresaAtualizadaV2'
+const CHAVE_VAGAS_DEMO = 'demoNexaCloudVagasAtualizadasV1'
+const CHAVE_CANDIDATOS_DEMO = 'demoNexaCloudCandidatosLucasEmEvolucaoV4'
+const CHAVE_DEMO_CANDIDATURAS = 'demoLucasCandidaturasAtualizadasV1'
 const VAGAS_MOCK_ANTIGAS = new Set(['vaga-2', 'vaga-3', 'vaga-4', 'vaga-5'])
 const CANDIDATOS_MOCK_ANTIGOS = new Set([
+  'cand-1',
+  'cand-jefferson-avanade',
+  'cand-app-demo-jefferson-avanade',
   'cand-3',
   'cand-4',
   'cand-5',
@@ -94,6 +109,7 @@ function normalizarAluno(usuario) {
     wizardConcluido: Boolean(usuario.wizardConcluido || Object.keys(respostasWizard).length),
     cursosConcluidos: Array.isArray(usuario.cursosConcluidos) ? usuario.cursosConcluidos : [],
     certificados: Array.isArray(usuario.certificados) ? usuario.certificados : [],
+    projetosPraticos: Array.isArray(usuario.projetosPraticos) ? usuario.projetosPraticos : [],
     progresso: usuario.progresso && typeof usuario.progresso === 'object' ? usuario.progresso : {},
     curriculo: usuario.curriculo && typeof usuario.curriculo === 'object' ? usuario.curriculo : {},
     perfilProfissional: {
@@ -169,16 +185,16 @@ function emailJaExiste(email, usuarios = [], empresas = []) {
 function carregarVagasIniciais() {
   const salvas = lerStorage('vagasEmpresa', null)
   if (!Array.isArray(salvas)) {
-    salvarStorage(CHAVE_AVANADE_VAGAS, true)
+    salvarStorage(CHAVE_VAGAS_DEMO, true)
     return vagasBase
   }
 
-  if (!lerStorage(CHAVE_AVANADE_VAGAS, false)) {
+  if (!lerStorage(CHAVE_VAGAS_DEMO, false)) {
     const idsBase = new Set(vagasBase.map((vaga) => vaga.id))
     const vagasCustomizadas = salvas.filter((vaga) => !idsBase.has(vaga.id) && !VAGAS_MOCK_ANTIGAS.has(vaga.id))
     const listaAtualizada = [...vagasBase, ...vagasCustomizadas]
     salvarStorage('vagasEmpresa', listaAtualizada)
-    salvarStorage(CHAVE_AVANADE_VAGAS, true)
+    salvarStorage(CHAVE_VAGAS_DEMO, true)
     return listaAtualizada
   }
 
@@ -197,11 +213,11 @@ function carregarVagasIniciais() {
 function carregarEmpresasIniciais() {
   const salvas = lerStorage('empresas', null)
   if (!Array.isArray(salvas)) {
-    salvarStorage(CHAVE_AVANADE_EMPRESA, true)
+    salvarStorage(CHAVE_EMPRESA_DEMO, true)
     return empresasBase
   }
 
-  if (!lerStorage(CHAVE_AVANADE_EMPRESA, false)) {
+  if (!lerStorage(CHAVE_EMPRESA_DEMO, false)) {
     const temEmpresaDemo = salvas.some((empresa) => empresa.id === DEMO_EMPRESA_ID)
     const listaComDemo = temEmpresaDemo
       ? salvas.map((empresa) => sincronizarEmpresaDemo(empresa))
@@ -214,7 +230,7 @@ function carregarEmpresasIniciais() {
     ]
 
     salvarStorage('empresas', listaAtualizada)
-    salvarStorage(CHAVE_AVANADE_EMPRESA, true)
+    salvarStorage(CHAVE_EMPRESA_DEMO, true)
     return listaAtualizada
   }
 
@@ -235,18 +251,18 @@ function carregarEmpresasIniciais() {
 function carregarCandidatosIniciais() {
   const salvos = lerStorage('candidatos', null)
   if (!Array.isArray(salvos)) {
-    salvarStorage(CHAVE_AVANADE_CANDIDATOS, true)
+    salvarStorage(CHAVE_CANDIDATOS_DEMO, true)
     return candidatosMock
   }
 
-  if (!lerStorage(CHAVE_AVANADE_CANDIDATOS, false)) {
+  if (!lerStorage(CHAVE_CANDIDATOS_DEMO, false)) {
     const idsBase = new Set(candidatosMock.map((candidato) => candidato.id))
     const customizados = salvos.filter(
       (candidato) => !idsBase.has(candidato.id) && !CANDIDATOS_MOCK_ANTIGOS.has(candidato.id) && candidato.vagaId,
     )
     const listaAtualizada = [...candidatosMock, ...customizados]
     salvarStorage('candidatos', listaAtualizada)
-    salvarStorage(CHAVE_AVANADE_CANDIDATOS, true)
+    salvarStorage(CHAVE_CANDIDATOS_DEMO, true)
     return listaAtualizada
   }
 
@@ -270,9 +286,10 @@ function carregarCandidaturasIniciais() {
   }
 
   if (!lerStorage(CHAVE_DEMO_CANDIDATURAS, false)) {
-    const existentes = new Set(salvas.map((candidatura) => candidatura.id))
-    const novas = candidaturaInicial.filter((candidatura) => !existentes.has(candidatura.id))
-    const atualizadas = [...salvas, ...novas]
+    const idsDemo = new Set(candidaturaInicial.map((candidatura) => candidatura.id))
+    const idsAntigos = new Set(['cand-app-demo-jefferson-avanade'])
+    const customizadas = salvas.filter((candidatura) => !idsDemo.has(candidatura.id) && !idsAntigos.has(candidatura.id))
+    const atualizadas = [...candidaturaInicial, ...customizadas]
     salvarStorage('candidaturas', atualizadas)
     salvarStorage(CHAVE_DEMO_CANDIDATURAS, true)
     return atualizadas
@@ -308,13 +325,19 @@ function carregarEstadoInicial() {
     removerStorage('usuarioAtual')
   }
 
+  if (usuarioAtual?.id === DEMO_EMPRESA_ID) {
+    usuarioAtual = { ...usuarioAtual, ...empresaDemoBase(), tipo: 'empresa' }
+    salvarStorage('usuarioAtual', usuarioAtual)
+  }
+
   if (!lerStorage(CHAVE_RESET_WIZARD_DEMO, false)) {
+    const alunoDemoBase = usuariosBase.find((usuario) => usuario.id === DEMO_ALUNO_ID)
     usuarios = usuarios.map((usuario) =>
       usuario.id === DEMO_ALUNO_ID
         ? normalizarAluno({
             ...usuario,
-            respostasWizard: {},
-            wizardConcluido: false,
+            respostasWizard: alunoDemoBase?.respostasWizard || {},
+            wizardConcluido: true,
           })
         : usuario,
     )
@@ -330,14 +353,7 @@ function carregarEstadoInicial() {
         usuario.id === DEMO_ALUNO_ID
           ? normalizarAluno({
               ...usuario,
-              bio: alunoDemoBase.bio,
-              foto: alunoDemoBase.foto,
-              fotoUrl: alunoDemoBase.fotoUrl,
-              capaUrl: alunoDemoBase.capaUrl,
-              curriculo: {
-                ...(usuario.curriculo || {}),
-                fotoUrl: alunoDemoBase.fotoUrl,
-              },
+              ...alunoDemoBase,
             })
           : usuario,
       )
@@ -604,6 +620,7 @@ export function AppProvider({ children }) {
               tecnologias: usuarioAtual.tecnologias,
               cursosConcluidos: usuarioAtual.cursosConcluidos,
               certificados: usuarioAtual.certificados,
+              projetosPraticos: usuarioAtual.projetosPraticos,
               progresso: usuarioAtual.progresso,
               respostasWizard: usuarioAtual.respostasWizard,
             }
@@ -697,6 +714,23 @@ export function AppProvider({ children }) {
     setUsuariosPersistido((lista) => substituirAluno(lista, atualizado))
   }
 
+  function adicionarProjetoPratico(projeto) {
+    if (!usuarioAtual || usuarioAtual.tipo !== 'aluno' || !projeto) return
+    const existentes = Array.isArray(usuarioAtual.projetosPraticos) ? usuarioAtual.projetosPraticos : []
+    if (existentes.some((item) => item.templateId === projeto.templateId || item.id === projeto.id)) return
+    atualizarAluno({ projetosPraticos: [...existentes, projeto] })
+  }
+
+  function atualizarProjetoPratico(projetoId, dados) {
+    if (!usuarioAtual || usuarioAtual.tipo !== 'aluno') return
+    const agora = new Date().toLocaleString('pt-BR')
+    atualizarAluno({
+      projetosPraticos: (usuarioAtual.projetosPraticos || []).map((projeto) =>
+        projeto.id === projetoId ? { ...projeto, ...dados, atualizadoEm: agora } : projeto,
+      ),
+    })
+  }
+
   const respostasWizard = usuarioAtual?.tipo === 'aluno' ? usuarioAtual.respostasWizard || {} : {}
   const progressoCursos = usuarioAtual?.tipo === 'aluno' ? usuarioAtual.progresso || {} : {}
 
@@ -725,6 +759,8 @@ export function AppProvider({ children }) {
     excluirVaga,
     atualizarStatusCandidato,
     atualizarAluno,
+    adicionarProjetoPratico,
+    atualizarProjetoPratico,
     atualizarEmpresa,
   }
 

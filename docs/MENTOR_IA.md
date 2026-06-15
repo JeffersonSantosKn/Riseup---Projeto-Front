@@ -7,7 +7,10 @@ O Mentor Inteligente é uma camada opcional de explicação textual para o RiseU
 ## O que ele faz
 
 - Explica recomendações já calculadas de trilhas, cursos e vagas.
-- Orienta melhorias no currículo.
+- Orienta melhorias no perfil, currículo, projetos práticos e candidaturas.
+- Melhora textos de vagas e do perfil institucional da empresa.
+- Redige resumos cautelosos para dossiês e feedbacks revisáveis.
+- Melhora textos orientativos ligados ao radar de prontidão.
 - Usa somente um resumo necessário do perfil e dos itens recomendados.
 - Nunca altera perfil, currículo, candidatura, vaga ou recomendação.
 - Nunca inventa ou adiciona itens ao resultado do recomendador.
@@ -50,12 +53,37 @@ O `gemma3:1b` é indicado para uma demonstração leve. Em computadores com mais
 
 ## Onde aparece
 
-- Painel do aluno: visão geral, trilha principal e curso principal.
-- Vagas: explicação da compatibilidade da vaga selecionada.
-- Meu Currículo: orientação sobre campos preenchidos e faltantes.
+- Mentor do aluno: painel, trilhas, cursos, vagas, perfil, currículo e candidaturas.
+- Projetos práticos e radar: melhoria opcional de textos orientativos.
+- Retorno de candidatura: orientação cuidadosa baseada no status e no feedback público.
+- Mentor da empresa: perfil institucional, criação e gerenciamento de vagas e candidatos.
+- Melhoria de vaga e perfil da empresa: sugestão revisável antes de aplicar.
+- Dossiê e feedback assistido: redação mais clara sem alterar score, listas ou decisão humana.
+
+## Uso no deploy público
+
+O deploy publicado sempre funciona com regras e fallbacks, mesmo sem Ollama. O workflow do GitHub Pages gera a versão pública com `VITE_IA_LOCAL_HABILITADA=true`, permitindo que o navegador tente usar o Ollama instalado no computador de quem acessa.
+
+Cada visitante que quiser receber textos gerados pelo modelo precisa ter o Ollama instalado, o `gemma3:1b` baixado e o serviço local executando. Como a chamada parte do navegador aberto no domínio público, também pode ser necessário autorizar `https://jeffersonsantoskn.github.io` na configuração local do Ollama. Sem isso, a central usa fallback automaticamente e nenhuma tela quebra.
+
+Exemplo para testar o deploy no PowerShell, após fechar outra instância do Ollama:
+
+```powershell
+$env:OLLAMA_ORIGINS='https://jeffersonsantoskn.github.io'
+ollama serve
+```
+
+Em outro terminal:
+
+```powershell
+ollama pull gemma3:1b
+```
 
 ## Proteções
 
+- Uma central compartilhada em `src/servicos/centralIA.js` controla habilitação, endpoint local, timeout, fallback e validação.
+- A IA apoia somente textos e explicações. Ela nunca decide recomendações, pontuações, candidaturas ou status.
+- Nenhuma sugestão é salva, publicada, aprovada ou rejeitada automaticamente.
 - Contexto reduzido, sem senha, CPF, localStorage completo ou objetos internos desnecessários.
 - Top 3 trilhas, top 5 cursos e top 3 vagas no máximo.
 - Timeout configurável.
@@ -63,6 +91,12 @@ O `gemma3:1b` é indicado para uma demonstração leve. Em computadores com mais
 - Máximo de 4 frases.
 - Limite de 600 caracteres para cards e 900 para currículo.
 - Respostas vazias, técnicas, grandes ou que citem itens conhecidos fora do contexto são descartadas.
+
+## Central de segurança
+
+Os recursos do mentor do aluno e da empresa usam a mesma infraestrutura segura. Cada recurso ainda possui validações próprias para impedir invenções, como cursos fora do contexto, tecnologias não informadas, benefícios inexistentes ou decisões sobre candidatos.
+
+Toda execução produz internamente uma origem (`ia` ou `fallback`). Essa informação serve para controle do sistema; a interface continua apresentando apenas a orientação do mentor, sem expor detalhes técnicos.
 
 ## Teste manual
 

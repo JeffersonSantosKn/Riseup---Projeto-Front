@@ -7149,3 +7149,1062 @@ body,
   .vaga-mentor-sugestoes article.span-2 { grid-column: auto; }
   .vaga-mentor-modal-card > footer .botao { width: 100%; justify-content: center; }
 }
+
+.projeto-pratico-secao {
+  display: grid;
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.projeto-pratico-card {
+  display: grid;
+  gap: 13px;
+  padding: 22px;
+  border: 1px solid #c9d7eb;
+  background: linear-gradient(145deg, #fff, #f4f8ff);
+  box-shadow: 0 14px 34px rgba(34, 78, 146, .08);
+}
+
+.projeto-pratico-card-compacto {
+  padding: 17px;
+  box-shadow: none;
+}
+
+.projeto-pratico-card h3,
+.projeto-pratico-card p {
+  margin: 0;
+}
+
+.projeto-pratico-card h3 {
+  font-size: clamp(18px, 2vw, 24px);
+}
+
+.projeto-pratico-card p {
+  color: #5f6f86;
+  line-height: 1.55;
+}
+
+.projeto-pratico-meta,
+.projeto-pratico-tags,
+.projeto-pratico-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.projeto-pratico-meta span,
+.projeto-pratico-tags span {
+  padding: 5px 8px;
+  border: 1px solid #bcd1f4;
+  background: #fff;
+  color: #245edb;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.projeto-pratico-acoes {
+  margin-top: 4px;
+}
+
+.projeto-pratico-modal-overlay {
+  position: fixed;
+  z-index: 10020;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(10, 22, 42, .62);
+}
+
+.projeto-pratico-modal {
+  width: min(900px, 100%);
+  max-height: min(820px, calc(100vh - 48px));
+  overflow: auto;
+  padding: 24px;
+  border: 1px solid #bdcde5;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(10, 30, 66, .28);
+}
+
+.projeto-pratico-modal > header,
+.projeto-pratico-modal > footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.projeto-pratico-modal > header h2 {
+  margin: 4px 0 0;
+}
+
+.projeto-pratico-modal > header > button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #ccd8e9;
+  background: #fff;
+}
+
+.projeto-pratico-modal section {
+  margin-top: 18px;
+}
+
+.projeto-pratico-modal section h3 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+}
+
+.projeto-pratico-modal section p,
+.projeto-pratico-modal li {
+  color: #506178;
+  line-height: 1.55;
+}
+
+.projeto-pratico-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.projeto-pratico-modal-grid section {
+  padding: 15px;
+  border: 1px solid #e0e7f1;
+  background: #f8fbff;
+}
+
+.projeto-pratico-modal-grid section ul,
+.projeto-pratico-modal-grid section ol {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.projeto-pratico-modal-grid section li:has(svg) {
+  display: flex;
+  gap: 6px;
+}
+
+.projeto-pratico-aviso {
+  padding: 11px 13px;
+  border-left: 3px solid #2871ee;
+  background: #eef5ff;
+  color: #33547d;
+}
+
+.projeto-pratico-modal > footer {
+  justify-content: flex-end;
+  margin-top: 22px;
+}
+
+.projetos-praticos-recomendados,
+.meus-projetos-praticos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.meu-projeto-pratico-card {
+  display: grid;
+  gap: 12px;
+  padding: 17px;
+  border: 1px solid #d5e0ef;
+  background: #fff;
+}
+
+.meu-projeto-pratico-card header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.meu-projeto-pratico-card h3,
+.meu-projeto-pratico-card p {
+  margin: 0;
+}
+
+.meu-projeto-pratico-card select,
+.meu-projeto-pratico-campos input,
+.meu-projeto-pratico-campos textarea {
+  min-height: 40px;
+  border: 1px solid #c8d5e7;
+  background: #fff;
+}
+
+.candidato-projetos-evidencia > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.candidato-projetos-evidencia article {
+  display: grid;
+  gap: 9px;
+  padding: 14px;
+  border: 1px solid #d5e1ef;
+  background: #f8fbff;
+}
+
+.candidato-projetos-evidencia article p {
+  margin: 0;
+  color: #596b82;
+  line-height: 1.5;
+}
+
+.candidato-projetos-evidencia nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.candidato-projetos-evidencia nav a {
+  color: #215dc2;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.meu-projeto-pratico-campos {
+  display: grid;
+  gap: 9px;
+}
+
+.meu-projeto-pratico-campos label {
+  display: grid;
+  gap: 5px;
+  color: #34455d;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.meu-projeto-pratico-campos input,
+.meu-projeto-pratico-campos textarea {
+  width: 100%;
+  padding: 0 10px;
+}
+
+.meu-projeto-pratico-campos textarea {
+  padding-block: 9px;
+  resize: vertical;
+}
+
+@media (max-width: 780px) {
+  .projeto-pratico-modal-grid,
+  .projetos-praticos-recomendados,
+  .meus-projetos-praticos,
+  .candidato-projetos-evidencia > div {
+    grid-template-columns: 1fr;
+  }
+
+  .projeto-pratico-modal {
+    padding: 17px;
+  }
+
+  .projeto-pratico-modal > footer,
+  .meu-projeto-pratico-card header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+.radar-prontidao-card {
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+  border: 1px solid #c8d8ed;
+  background: linear-gradient(145deg, #fff, #f3f8ff);
+  box-shadow: 0 16px 38px rgba(31, 75, 143, .09);
+}
+
+.radar-prontidao-card > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.radar-prontidao-card > header h2,
+.radar-prontidao-card > header p,
+.radar-prontidao-card h3,
+.radar-prontidao-card ul,
+.radar-proxima-acao p {
+  margin: 0;
+}
+
+.radar-prontidao-card > header h2 {
+  margin-top: 5px;
+  font-size: clamp(19px, 2.2vw, 27px);
+}
+
+.radar-prontidao-card > header p {
+  margin-top: 7px;
+  color: #5a6c83;
+  line-height: 1.5;
+}
+
+.radar-prontidao-card > header > strong {
+  display: grid;
+  flex: 0 0 auto;
+  color: #195fd0;
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1;
+  text-align: right;
+}
+
+.radar-prontidao-card > header > strong small {
+  margin-top: 6px;
+  color: #4f6076;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.radar-prontidao-barra {
+  height: 8px;
+  overflow: hidden;
+  background: #dbe6f5;
+}
+
+.radar-prontidao-barra span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #2874ef, #1eb89d);
+}
+
+.radar-prontidao-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.radar-prontidao-grid section,
+.radar-proxima-acao,
+.radar-recomendacoes {
+  padding: 14px;
+  border: 1px solid #dce6f2;
+  background: rgba(255, 255, 255, .82);
+}
+
+.radar-recomendacoes {
+  display: grid;
+  gap: 9px;
+}
+
+.radar-recomendacoes > strong {
+  color: #246bdc;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.radar-recomendacoes > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.radar-recomendacoes span,
+.radar-recomendacoes a {
+  padding: 6px 8px;
+  border: 1px solid #c7d8ef;
+  background: #fff;
+  color: #315f9f;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.radar-checklist .radar-projeto-sugerido {
+  margin-top: 4px;
+  padding-top: 7px;
+  border-top: 1px solid #e2e9f3;
+  color: #245fb8;
+  font-weight: 700;
+}
+
+.radar-prontidao-grid h3 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.radar-prontidao-grid ul {
+  display: grid;
+  gap: 5px;
+  margin-top: 9px;
+  padding-left: 18px;
+  color: #55667d;
+  font-size: 12px;
+}
+
+.radar-proxima-acao {
+  display: flex;
+  gap: 10px;
+}
+
+.radar-proxima-acao svg {
+  flex: 0 0 auto;
+  color: #246bdc;
+}
+
+.radar-proxima-acao div {
+  display: grid;
+  gap: 4px;
+}
+
+.radar-proxima-acao span {
+  color: #246bdc;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.radar-proxima-acao strong {
+  font-size: 14px;
+}
+
+.radar-proxima-acao p {
+  color: #5c6d83;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.radar-prontidao-card > footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.radar-checklist {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid #dce6f2;
+  background: #fff;
+}
+
+.radar-checklist > strong {
+  margin-bottom: 3px;
+  font-size: 12px;
+}
+
+.radar-checklist span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #53647a;
+  font-size: 11px;
+}
+
+.radar-checklist span.concluido svg {
+  color: #16844a;
+}
+
+.radar-checklist span.pendente svg {
+  color: #b6780a;
+}
+
+.radar-checklist small {
+  margin-top: 4px;
+  color: #6b7a8e;
+  font-size: 10px;
+}
+
+.radar-prontidao-compacto {
+  gap: 11px;
+  padding: 15px;
+  box-shadow: none;
+}
+
+.radar-prontidao-compacto > header h2 {
+  font-size: 16px;
+}
+
+.radar-prontidao-compacto > header p {
+  font-size: 12px;
+}
+
+.radar-prontidao-compacto > header > strong {
+  font-size: 28px;
+}
+
+.radar-dashboard-section {
+  padding-block: 22px !important;
+}
+
+.vaga-detalhe-preview .radar-prontidao-card {
+  margin-top: 16px;
+  text-align: left;
+}
+
+.vaga-detalhe-preview .radar-prontidao-card > header > strong {
+  color: #195fd0;
+}
+
+/* Vagas do aluno: uma única rolagem e radar integrado aos cards */
+@media (min-width: 981px) {
+  .vagas-board-page .vagas-lista,
+  .vagas-board-page .vaga-detalhe-preview {
+    max-height: none !important;
+    overflow: visible !important;
+    overscroll-behavior: auto;
+  }
+
+  .vagas-board-page .vaga-detalhe-preview {
+    position: static;
+  }
+}
+
+.vaga-detalhe-preview .radar-prontidao-card,
+.detalhe-vaga .radar-prontidao-card {
+  border-color: #dce3ed;
+  border-radius: 10px;
+  background: #f8fafc;
+  box-shadow: none;
+}
+
+.vaga-detalhe-preview .radar-prontidao-card {
+  padding: 14px;
+}
+
+.vaga-detalhe-preview .radar-checklist,
+.vaga-detalhe-preview .radar-proxima-acao,
+.detalhe-vaga .radar-checklist,
+.detalhe-vaga .radar-proxima-acao {
+  border-color: #e1e7ef;
+  border-radius: 7px;
+  background: #fff;
+}
+
+.vaga-detalhe-preview .radar-prontidao-barra,
+.detalhe-vaga .radar-prontidao-barra {
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.vaga-detalhe-preview .radar-prontidao-barra span,
+.detalhe-vaga .radar-prontidao-barra span {
+  border-radius: inherit;
+}
+
+.detalhe-vaga-empresa {
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.detalhe-vaga-empresa-capa {
+  position: relative;
+  min-height: 150px;
+  background-position: center;
+  background-size: cover;
+}
+
+.detalhe-vaga-empresa-logo {
+  position: absolute;
+  bottom: -30px;
+  left: 18px;
+  display: grid;
+  width: 72px;
+  height: 72px;
+  place-items: center;
+  overflow: hidden;
+  border: 4px solid #fff;
+  border-radius: 12px;
+  color: #fff;
+  background: #111827;
+  font-size: 18px;
+  font-weight: 900;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, .16);
+}
+
+.detalhe-vaga-empresa-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #fff;
+}
+
+.detalhe-vaga-empresa-conteudo {
+  display: grid;
+  gap: 12px;
+  padding: 44px 22px 22px;
+}
+
+.detalhe-vaga-empresa-conteudo h3,
+.detalhe-vaga-empresa-conteudo p {
+  margin: 0;
+}
+
+.detalhe-vaga-empresa-conteudo p {
+  color: #617086;
+  line-height: 1.65;
+}
+
+.candidatura-status-discreto {
+  display: inline-flex;
+  gap: 9px;
+  align-items: flex-start;
+  width: fit-content;
+  margin-top: 12px;
+  padding: 9px 11px;
+  border: 1px solid #dce6e2;
+  border-radius: 8px;
+  color: #52645e;
+  background: #f7faf9;
+  font-size: 11px;
+}
+
+.candidatura-status-discreto svg {
+  flex: 0 0 auto;
+  width: 15px;
+  height: 15px;
+  margin-top: 1px;
+  color: #43826a;
+}
+
+.candidatura-status-discreto div {
+  display: grid;
+  gap: 2px;
+}
+
+.candidatura-status-discreto strong {
+  color: #315c4c;
+  font-size: 12px;
+}
+
+.candidatura-status-discreto span {
+  color: #708078;
+}
+
+@media (max-width: 720px) {
+  .radar-prontidao-card > header,
+  .radar-prontidao-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .radar-prontidao-card > header {
+    display: grid;
+  }
+
+  .radar-prontidao-card > header > strong {
+    text-align: left;
+  }
+}
+.perfil-udemy-page .candidatura-acompanhamento {
+  display: grid;
+  gap: 16px;
+  margin-top: 14px;
+  padding: 20px;
+  border: 1px solid #dbe4f0;
+  background: #fff;
+}
+
+.perfil-udemy-page .candidatura-acompanhamento > header,
+.perfil-udemy-page .candidatura-acompanhamento > footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.perfil-udemy-page .candidatura-acompanhamento h3,
+.perfil-udemy-page .candidatura-acompanhamento h4,
+.perfil-udemy-page .candidatura-acompanhamento p {
+  margin: 0;
+}
+
+.perfil-udemy-page .candidatura-acompanhamento h3 {
+  margin-top: 4px;
+  font-size: 18px;
+}
+
+.perfil-udemy-page .candidatura-acompanhamento header p,
+.perfil-udemy-page .candidatura-acompanhamento section p {
+  margin-top: 6px;
+  color: #5f6f86;
+  line-height: 1.55;
+}
+
+.perfil-udemy-page .candidatura-empresa,
+.perfil-udemy-page .candidatura-acompanhamento section > strong {
+  color: #245edb;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.perfil-udemy-page .candidatura-status {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  border: 1px solid #bfd0e8;
+  background: #eef5ff;
+  color: #2054ad;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.perfil-udemy-page .candidatura-status-nao-selecionado {
+  border-color: #e7d2a4;
+  background: #fff8e8;
+  color: #845b00;
+}
+
+.perfil-udemy-page .candidatura-status-selecionado {
+  border-color: #a9ddbf;
+  background: #edfdf4;
+  color: #14723b;
+}
+
+.perfil-udemy-page .candidatura-feedback,
+.perfil-udemy-page .candidatura-proxima-acao,
+.perfil-udemy-page .candidatura-pontos,
+.perfil-udemy-page .candidatura-relacionados {
+  padding: 14px;
+  border: 1px solid #e1e8f2;
+  background: #f8fbff;
+}
+
+.perfil-udemy-page .candidatura-proxima-acao h4 {
+  margin-top: 7px;
+  font-size: 15px;
+}
+
+.perfil-udemy-page .candidatura-pontos ul {
+  display: grid;
+  gap: 5px;
+  margin: 9px 0 0;
+  padding-left: 18px;
+  color: #4f6077;
+  font-size: 13px;
+}
+
+.perfil-udemy-page .candidatura-tags,
+.perfil-udemy-page .candidatura-relacionados > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.perfil-udemy-page .candidatura-tags span,
+.perfil-udemy-page .candidatura-relacionados a {
+  padding: 5px 8px;
+  border: 1px solid #bcd1f4;
+  background: #fff;
+  color: #245edb;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.perfil-udemy-page .candidatura-acompanhamento > footer {
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.perfil-udemy-page .candidatura-acompanhamento > footer small {
+  margin-left: auto;
+}
+
+.candidato-decisao-compartilhar {
+  display: flex !important;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 12px;
+  border: 1px solid #cbd9ec;
+  background: #f6f9fe;
+}
+
+.candidato-decisao-compartilhar input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+@media (max-width: 720px) {
+  .perfil-udemy-page .candidatura-acompanhamento > header,
+  .perfil-udemy-page .candidatura-acompanhamento > footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .perfil-udemy-page .candidatura-status {
+    align-self: flex-start;
+  }
+
+  .perfil-udemy-page .candidatura-acompanhamento > footer small {
+    margin-left: 0;
+  }
+}
+
+/* Consistência visual final: Meu Perfil e vagas usam cards quadrados */
+.perfil-udemy-page .perfil-udemy-form,
+.perfil-udemy-page .perfil-subcard,
+.perfil-udemy-page .perfil-metricas-udemy article,
+.perfil-udemy-page .certificado-card,
+.perfil-udemy-page .certificado-expansivel,
+.perfil-udemy-page .meu-projeto-pratico-card,
+.perfil-udemy-page .projeto-pratico-card,
+.perfil-udemy-page .candidatura-acompanhamento,
+.perfil-udemy-page .candidatura-feedback,
+.perfil-udemy-page .candidatura-proxima-acao,
+.perfil-udemy-page .candidatura-pontos,
+.perfil-udemy-page .candidatura-relacionados,
+.perfil-udemy-page .radar-prontidao-card,
+.perfil-udemy-page .radar-prontidao-grid section,
+.perfil-udemy-page .radar-recomendacoes,
+.perfil-udemy-page .radar-checklist,
+.perfil-udemy-page .radar-proxima-acao {
+  border-radius: 0 !important;
+}
+
+.vagas-board-page .vagas-toolbar select,
+.vagas-board-page .vagas-toolbar input,
+.vagas-board-page .vagas-search-pill,
+.vagas-board-page .vaga-list-card,
+.vagas-board-page .vaga-detalhe-preview,
+.vagas-board-page .vaga-detalhe-logo,
+.vagas-board-page .radar-prontidao-card,
+.vagas-board-page .radar-checklist,
+.vagas-board-page .radar-proxima-acao,
+.detalhe-vaga .vaga-hero,
+.detalhe-vaga .info-card,
+.detalhe-vaga .detalhe-vaga-empresa,
+.detalhe-vaga .detalhe-vaga-empresa-logo,
+.detalhe-vaga .radar-prontidao-card,
+.detalhe-vaga .radar-checklist,
+.detalhe-vaga .radar-proxima-acao,
+.detalhe-vaga .candidatura-status-discreto {
+  border-radius: 0 !important;
+}
+
+/* Radar: menos card dentro de card e mais proximidade entre conteúdo e bordas */
+.vaga-detalhe-preview .radar-prontidao-card,
+.detalhe-vaga .radar-prontidao-card {
+  gap: 10px;
+  padding: 13px 14px;
+  border-color: #d7dee8;
+  background: #fff;
+}
+
+.vaga-detalhe-preview .radar-prontidao-card > header,
+.detalhe-vaga .radar-prontidao-card > header {
+  gap: 12px;
+}
+
+.vaga-detalhe-preview .radar-prontidao-card > header h2,
+.detalhe-vaga .radar-prontidao-card > header h2 {
+  margin-top: 3px;
+  font-size: 14px;
+}
+
+.vaga-detalhe-preview .radar-prontidao-card > header p,
+.detalhe-vaga .radar-prontidao-card > header p {
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.vaga-detalhe-preview .radar-prontidao-card > header > strong,
+.detalhe-vaga .radar-prontidao-card > header > strong {
+  color: #245a9b;
+  font-size: 24px;
+}
+
+.vaga-detalhe-preview .radar-prontidao-barra,
+.detalhe-vaga .radar-prontidao-barra {
+  height: 5px;
+  border-radius: 0;
+}
+
+.vaga-detalhe-preview .radar-prontidao-barra span,
+.detalhe-vaga .radar-prontidao-barra span {
+  border-radius: 0;
+  background: #2874c6;
+}
+
+.vaga-detalhe-preview .radar-checklist,
+.vaga-detalhe-preview .radar-proxima-acao,
+.detalhe-vaga .radar-checklist,
+.detalhe-vaga .radar-proxima-acao {
+  gap: 5px;
+  padding: 10px;
+  border-color: #e1e6ed;
+  background: #f8f9fb;
+}
+
+.vaga-detalhe-preview .radar-proxima-acao,
+.detalhe-vaga .radar-proxima-acao {
+  align-items: flex-start;
+}
+
+.vaga-detalhe-preview .radar-prontidao-card > footer .botao,
+.detalhe-vaga .radar-prontidao-card > footer .botao {
+  min-height: 36px;
+  padding: 7px 12px;
+  border-radius: 0;
+  font-size: 12px;
+}
+
+/* Página de lista de vagas */
+.vagas-board-page .vagas-board {
+  gap: 18px;
+}
+
+.vagas-board-page .vaga-list-card {
+  border-color: #d8dee8;
+  box-shadow: none;
+}
+
+.vagas-board-page .vaga-list-card.ativo {
+  border-color: #527db5;
+  box-shadow: inset 3px 0 0 #2563a9;
+}
+
+.vagas-board-page .vaga-detalhe-preview {
+  border-color: #d8dee8;
+  box-shadow: none;
+}
+
+.vagas-board-page .vaga-detalhe-preview header {
+  padding: 22px 24px 16px;
+}
+
+.vagas-board-page .vaga-preview-tabs {
+  margin-inline: 24px;
+}
+
+/* Página Ver vaga: composição mais compacta e profissional */
+.detalhe-vaga {
+  width: min(1120px, calc(100% - 32px));
+}
+
+.detalhe-vaga .vaga-hero {
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr);
+  align-items: start;
+  gap: 28px;
+  padding: 28px;
+  border-color: #d8dee8;
+  box-shadow: none;
+}
+
+.detalhe-vaga .vaga-hero h1 {
+  max-width: 680px;
+  font-size: clamp(42px, 5vw, 64px);
+}
+
+.detalhe-vaga .vaga-hero > div > p {
+  max-width: 650px;
+  margin-bottom: 14px;
+}
+
+.detalhe-vaga .radar-prontidao-card {
+  max-width: 650px;
+  margin-top: 16px;
+}
+
+.detalhe-vaga .linha-acoes {
+  margin-top: 0;
+}
+
+.detalhe-vaga .grade-2 {
+  gap: 18px;
+}
+
+.detalhe-vaga .info-card {
+  padding: 20px;
+  border-color: #d8dee8;
+  box-shadow: none;
+}
+
+.detalhe-vaga .info-card h2 {
+  margin-top: 0;
+  font-size: clamp(26px, 3vw, 36px);
+}
+
+.detalhe-vaga-empresa {
+  border-color: #d8dee8;
+}
+
+.detalhe-vaga-empresa-capa {
+  min-height: 132px;
+}
+
+.detalhe-vaga-empresa-conteudo {
+  gap: 10px;
+  padding: 42px 20px 20px;
+}
+
+@media (max-width: 980px) {
+  .detalhe-vaga .vaga-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .detalhe-vaga .radar-prontidao-card {
+    max-width: none;
+  }
+}
+
+/* Coday e autenticacao: marca mais visivel e acesso demo orientado */
+.auth-split-brand img {
+  width: 48px;
+  height: 48px;
+}
+
+.auth-demo-notice {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: start;
+  margin-bottom: 18px;
+  padding: 12px 13px;
+  border: 1px solid #bfd2f5;
+  color: #30496f;
+  background: #f2f7ff;
+}
+
+.auth-demo-notice > svg {
+  margin-top: 2px;
+  color: #2563eb;
+}
+
+.auth-demo-notice p {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  font-size: .82rem;
+  line-height: 1.45;
+}
+
+.auth-demo-notice strong {
+  color: #173f8f;
+  font-size: .86rem;
+}
+
+.auth-demo-notice button {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  color: #587093;
+  background: transparent;
+  cursor: pointer;
+}
+
+@media (max-width: 680px) {
+  .auth-split-brand img {
+    width: 41px;
+    height: 41px;
+  }
+}

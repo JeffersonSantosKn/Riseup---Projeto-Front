@@ -12,8 +12,10 @@ import {
   analisarCompatibilidadeCandidatoVaga,
   gerarDossieCandidato,
   gerarFeedbackCandidatoFallback,
+  validarFeedbackCandidato,
 } from '../../../servicos/analiseCandidaturaEmpresa'
 import { gerarFeedbackCandidatoComIA, resumirDossieCandidatoComIA } from '../../../servicos/empresaIA'
+import { projetoEhEvidencia } from '../../../servicos/projetosPraticos'
 
 function normalizarTexto(valor = '') {
   return String(valor)
@@ -283,12 +285,14 @@ function candidatoDaCandidatura(candidatura, usuario, progressoCursos) {
     cursos: cursosDoUsuario(perfil),
     cursosConcluidos: Array.isArray(perfil.cursosConcluidos) ? perfil.cursosConcluidos : [],
     certificados: Array.isArray(perfil.certificados) ? perfil.certificados : [],
+    projetosPraticos: Array.isArray(perfil.projetosPraticos) ? perfil.projetosPraticos : [],
     tecnologias: tecnologiasDoUsuario(perfil),
     tecnologiasEstudadas: calcularTecnologiasEstudadas(progressoDoPerfil),
     progressoCursos: progressoDoPerfil,
     atualizadoEm: candidatura.atualizadoEm,
     motivoInterno: candidatura.motivoInterno || '',
     observacaoInterna: candidatura.observacaoInterna || '',
+    feedbackPublicoAluno: candidatura.feedbackPublicoAluno || '',
     origem: 'candidatura',
   }
 }
@@ -345,6 +349,9 @@ function montarDadosCurriculoCandidato(candidato = {}) {
   const certificadosExternosArquivos = Array.isArray(perfilProfissional.certificadosExternosArquivos)
     ? perfilProfissional.certificadosExternosArquivos
     : []
+  const projetosComEvidencia = (candidato.projetosPraticos || [])
+    .filter(projetoEhEvidencia)
+    .map((projeto) => `${projeto.titulo} - ${projeto.tecnologias.slice(0, 5).join(', ')}${projeto.github ? ` - ${projeto.github}` : projeto.deploy ? ` - ${projeto.deploy}` : ''}`)
 
   return {
     nome,
@@ -367,7 +374,7 @@ function montarDadosCurriculoCandidato(candidato = {}) {
     certificadosTrilum: Array.isArray(candidato.certificados) ? candidato.certificados.map(nomeDoCurso) : [],
     idiomas: linhasTexto(perfilProfissional.idiomas || curriculo.idiomas),
     formacoes: linhasTexto(perfilProfissional.formacoes || curriculo.formacoes),
-    projetos: linhasTexto(perfilProfissional.projetos || curriculo.projetos),
+    projetos: [...linhasTexto(perfilProfissional.projetos || curriculo.projetos), ...projetosComEvidencia],
     experiencias: linhasTexto(perfilProfissional.experiencias || curriculo.experiencias),
     certificadosExternos: [
       ...linhasTexto(perfilProfissional.certificadosExternos || curriculo.certificadosExternos),
@@ -570,7 +577,8 @@ export function ListaCandidatos() {
       status,
       motivo: candidato.motivoInterno || '',
       observacaoInterna: candidato.observacaoInterna || '',
-      feedback: gerarFeedbackCandidatoFallback({ candidato, vaga, status, analiseCompatibilidade: analise }),
+      feedback: candidato.feedbackPublicoAluno || gerarFeedbackCandidatoFallback({ candidato, vaga, status, analiseCompatibilidade: analise }),
+      compartilharFeedback: Boolean(candidato.feedbackPublicoAluno),
       analise,
     })
     setMensagemDecisao('')
@@ -611,9 +619,18 @@ export function ListaCandidatos() {
 
   function confirmarDecisao() {
     if (!decisao) return
+    const feedbackPublico = validarFeedbackCandidato(decisao.feedback)
+      ? decisao.feedback.trim()
+      : gerarFeedbackCandidatoFallback({
+          candidato: decisao.candidato,
+          vaga,
+          status: decisao.status,
+          analiseCompatibilidade: decisao.analise,
+        })
     const detalhes = {
       motivoInterno: decisao.motivo,
       observacaoInterna: decisao.observacaoInterna,
+      feedbackPublicoAluno: decisao.compartilharFeedback ? feedbackPublico : '',
     }
     atualizarStatusCandidato(decisao.candidato.id, decisao.status, detalhes)
     setPerfilPreview((atual) => (atual?.id === decisao.candidato.id ? { ...atual, status: decisao.status, ...detalhes } : atual))
@@ -918,6 +935,27 @@ export function ListaCandidatos() {
               </div>
             </section>
 
+            {(perfilPreview.projetosPraticos || []).filter(projetoEhEvidencia).length > 0 && (
+              <section className="candidato-projetos-evidencia">
+                <h3>Projetos práticos com evidência</h3>
+                <div>
+                  {(perfilPreview.projetosPraticos || []).filter(projetoEhEvidencia).map((projeto) => (
+                    <article key={projeto.id}>
+                      <strong>{projeto.titulo}</strong>
+                      <p>{projeto.descricao}</p>
+                      <div className="candidato-tech-lista">
+                        {projeto.tecnologias.slice(0, 6).map((tecnologia) => <span key={tecnologia}>{tecnologia}</span>)}
+                      </div>
+                      <nav>
+                        {projeto.github && <a href={projeto.github} target="_blank" rel="noreferrer">Ver GitHub</a>}
+                        {projeto.deploy && <a href={projeto.deploy} target="_blank" rel="noreferrer">Ver deploy</a>}
+                      </nav>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )}
+
             {dossie && (
               <section className="candidato-dossie">
                 <header>
@@ -1056,6 +1094,14 @@ export function ListaCandidatos() {
             <label>
               <span>Feedback assistido para revisar</span>
               <textarea rows="6" value={decisao.feedback} onChange={(evento) => atualizarDecisao('feedback', evento.target.value)} />
+            </label>
+            <label className="candidato-decisao-compartilhar">
+              <input
+                type="checkbox"
+                checked={decisao.compartilharFeedback}
+                onChange={(evento) => atualizarDecisao('compartilharFeedback', evento.target.checked)}
+              />
+              <span>Compartilhar este feedback revisado com o candidato</span>
             </label>
             <div className="candidato-decisao-assistente">
               <button type="button" onClick={gerarFeedbackAssistido} disabled={carregandoFeedback}>

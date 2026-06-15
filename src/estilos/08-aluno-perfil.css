@@ -955,6 +955,24 @@
 .perfil-validacao-alerta .perfil-validacao-mensagem { color: #9a5b05 }
 .perfil-validacao-bom .perfil-validacao-mensagem { color: #087443 }
 
+.perfil-field-destaque {
+  position: relative;
+  z-index: 1;
+  padding: 12px;
+  border-radius: 10px;
+  outline: 3px solid rgba(37, 99, 235, 0.42);
+  outline-offset: 4px;
+  background: rgba(239, 246, 255, 0.82);
+  animation: perfil-campo-destaque 1.1s ease-in-out 2;
+}
+
+@keyframes perfil-campo-destaque {
+  50% {
+    outline-color: rgba(37, 99, 235, 0.9);
+    box-shadow: 0 0 0 8px rgba(37, 99, 235, 0.1);
+  }
+}
+
 .perfil-sugestoes-acoes {
   display: flex;
   flex-wrap: wrap;

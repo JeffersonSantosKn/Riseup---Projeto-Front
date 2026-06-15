@@ -7,7 +7,7 @@ const exemplosPorCaso = [
   {
     termos: ['nome oficial', 'razão social', 'razao social', 'nome empresarial', 'nome jurídico', 'nome juridico'],
     rotulo: 'Nome oficial da empresa',
-    exemplos: ['Trilum Tecnologia Ltda.', 'Avanade Brasil Ltda.', 'NexaFlow Soluções Digitais S.A.'],
+    exemplos: ['Trilum Tecnologia Ltda.', 'NexaCloud Solutions Tecnologia Ltda.', 'NexaFlow Soluções Digitais S.A.'],
   },
   {
     termos: ['setor de atuação', 'informar setor', 'setor'],
@@ -27,7 +27,7 @@ const exemplosPorCaso = [
   {
     termos: ['nome comercial', 'nome da empresa'],
     rotulo: 'Nome de empresa válido',
-    exemplos: ['Trilum Conecta', 'Avanade Brasil', 'Porto Digital Lab'],
+    exemplos: ['Trilum Conecta', 'NexaCloud Solutions', 'Porto Digital Lab'],
   },
   {
     termos: ['e-mail corporativo', 'e-mails corporativos'],

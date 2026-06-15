@@ -6,6 +6,7 @@ import { Badge } from '../../../componentes/interface/Badge'
 import { Botao } from '../../../componentes/interface/Botao'
 import { MentorRecomendacaoToast } from '../../../componentes/interface/MentorRecomendacaoToast'
 import { VagaCard } from '../../../componentes/vagas/VagaCard'
+import { RadarProntidaoCard } from '../../../componentes/candidaturas/RadarProntidaoCard'
 import { useApp } from '../../../contextos/AppContext'
 import { modoApresentacao } from '../../../dados/usuarios'
 import { contarCandidatosDaVaga } from '../../../servicos/candidaturas'
@@ -17,6 +18,7 @@ import {
   montarContextoMentorAluno,
 } from '../../../servicos/mentorIA'
 import { calcularProgresso, recomendarCursos, recomendarTrilhas, recomendarVagas } from '../../../servicos/recomendacoes'
+import { calcularProntidaoAluno } from '../../../servicos/prontidaoCandidatura'
 
 const rotulos = {
   areaDesejada: 'Area',
@@ -36,6 +38,7 @@ export function PainelAluno() {
   const iniciais = usuarioAtual?.foto || primeiroNome.slice(0, 2).toUpperCase()
   const trilhaPrincipal = recomendadas[0]
   const cursoPrincipal = cursosSugeridos[0]
+  const prontidao = calcularProntidaoAluno({ aluno: usuarioAtual, vagas })
   const contextoMentor = montarContextoMentorAluno({
     usuarioAtual,
     respostasWizard,
@@ -55,6 +58,14 @@ export function PainelAluno() {
     candidaturas,
   })
   const cenariosMentor = [
+    {
+      id: 'radar-prontidao',
+      label: 'Prontidão',
+      titulo: 'Sua prontidão para candidaturas',
+      resumo: `Seu radar está em ${prontidao.score}% (${prontidao.nivel}). ${prontidao.proximaAcao.titulo}.`,
+      detalhe: `${prontidao.resumo} Próxima melhor ação: ${prontidao.proximaAcao.descricao}`,
+      acao: { label: 'Ver radar completo', to: '#/aluno/perfil' },
+    },
     {
       id: 'geral',
       label: 'Visão geral',
@@ -157,6 +168,10 @@ export function PainelAluno() {
           </div>
         </aside>
       </div>
+
+      <section className="dashboard-section radar-dashboard-section" data-mentor-aluno-section="radar">
+        <RadarProntidaoCard prontidao={prontidao} compacto />
+      </section>
 
       <section className="dashboard-section bg-gray" data-mentor-aluno-section="trilhas">
         <div className="section-header-html">

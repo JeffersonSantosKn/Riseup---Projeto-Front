@@ -4,15 +4,17 @@ import { ModulosAccordion } from '../../../componentes/cursos/ModulosAccordion'
 import { Badge } from '../../../componentes/interface/Badge'
 import { Botao } from '../../../componentes/interface/Botao'
 import { MentorPaginaAlunoToast } from '../../../componentes/interface/MentorPaginaAlunoToast'
+import { ProjetoPraticoCard } from '../../../componentes/projetos/ProjetoPraticoCard'
 import { useApp } from '../../../contextos/AppContext'
 import { cursosDaTrilha, encontrarConteudo } from '../../../servicos/conteudosCurso'
 import { analisarConteudoNoContexto, analisarTrilhaNoContexto } from '../../../servicos/mentorConteudoContextual'
 import { calcularProgresso, recomendarCursos, recomendarTrilhas } from '../../../servicos/recomendacoes'
+import { gerarProjetoPorCurso, gerarProjetoPorTrilha, projetoSugeridoParaProjetoAluno } from '../../../servicos/projetosPraticos'
 
 export function DetalheCurso() {
   const { trilhaId } = useParams()
   const location = useLocation()
-  const { progressoCursos, respostasWizard } = useApp()
+  const { usuarioAtual, progressoCursos, respostasWizard, adicionarProjetoPratico } = useApp()
   const conteudo = encontrarConteudo(trilhaId)
 
   if (!conteudo) return <section className="pagina">Curso ou trilha nao encontrada.</section>
@@ -44,6 +46,14 @@ export function DetalheCurso() {
           cursosRecomendados,
           progresso,
         })
+  const projetoSugerido = conteudo.tipoConteudo === 'trilha'
+    ? gerarProjetoPorTrilha({ trilha: conteudo, aluno: respostasWizard })
+    : gerarProjetoPorCurso({ curso: conteudo, aluno: respostasWizard, trilha: trilhaOrigem })
+  const projetoAdicionado = (usuarioAtual?.projetosPraticos || []).some((projeto) => projeto.templateId === projetoSugerido.id)
+
+  function adicionarProjeto(projeto) {
+    adicionarProjetoPratico(projetoSugeridoParaProjetoAluno(projeto))
+  }
 
   function cursoRelacionadoDoModulo(modulo) {
     if (!cursosRelacionados.length) return null
@@ -121,6 +131,14 @@ export function DetalheCurso() {
           />
         </aside>
       </main>
+      <section className="projeto-pratico-secao" data-mentor-pagina-section="projeto-pratico">
+        <div className="secao-cabecalho">
+          <span className="eyebrow">Transforme estudo em evidência</span>
+          <h2>{conteudo.tipoConteudo === 'trilha' ? 'Projeto final sugerido para esta trilha' : 'Projeto para praticar este curso'}</h2>
+          <p>Adicione como planejado, desenvolva no seu ritmo e registre GitHub ou deploy quando tiver uma entrega real.</p>
+        </div>
+        <ProjetoPraticoCard projeto={projetoSugerido} adicionado={projetoAdicionado} onAdicionar={adicionarProjeto} />
+      </section>
       <MentorPaginaAlunoToast
         mensagens={[
           {
@@ -128,6 +146,12 @@ export function DetalheCurso() {
             titulo: orientacaoContextual?.titulo,
             msg: orientacaoContextual?.resumo,
             detalhe: orientacaoContextual?.detalhe,
+          },
+          {
+            id: 'conteudo-projeto-pratico',
+            titulo: 'Transforme estudo em evidência',
+            msg: 'Depois deste conteúdo, crie um projeto pequeno para praticar. Ele começa como planejado e só vira evidência quando você realmente desenvolver e documentar.',
+            detalhe: `O projeto sugerido é “${projetoSugerido.titulo}”. Ele foi adaptado ao conteúdo e ao seu nível atual.`,
           },
         ]}
         orientacaoContextual={orientacaoContextual}

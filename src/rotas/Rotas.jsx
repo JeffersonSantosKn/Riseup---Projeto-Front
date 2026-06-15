@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { AppLayout } from '../componentes/layout/AppLayout'
 import { useApp } from '../contextos/AppContext'
 import { modoApresentacao } from '../dados/usuarios'
@@ -19,6 +19,7 @@ import { ListaCandidatos } from '../paginas/Empresa/ListaCandidatos/ListaCandida
 import { PainelEmpresa } from '../paginas/Empresa/Painel/PainelEmpresa'
 import { PerfilEmpresa } from '../paginas/Empresa/PerfilEmpresa/PerfilEmpresa'
 import { LandingPage } from '../paginas/LandingPage/LandingPage'
+import { Coday } from '../paginas/Coday/Coday'
 
 function Protegida({ children, tipo }) {
   const { usuarioAtual } = useApp()
@@ -39,14 +40,21 @@ function RequerWizardAluno({ children }) {
   return children
 }
 
+function LoginRoteado() {
+  const location = useLocation()
+  return <Login key={location.search || 'login-normal'} />
+}
+
 export function Rotas() {
   const apresentacaoAtiva = modoApresentacao.ativo
 
   return (
     <Routes>
+      <Route path="coday" element={<Coday />} />
+
       <Route element={<AppLayout />}>
         <Route index element={<LandingPage />} />
-        <Route path="entrar" element={<Login />} />
+        <Route path="entrar" element={<LoginRoteado />} />
         <Route path="cadastro/aluno" element={<CadastroAluno />} />
         <Route path="cadastro/empresa" element={apresentacaoAtiva ? <Navigate to="/" replace /> : <CadastroEmpresa />} />
       </Route>
