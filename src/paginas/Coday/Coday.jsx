@@ -56,7 +56,7 @@ const materiaisCoday = [
     id: 'github',
     titulo: 'Código no GitHub',
     descricao: 'Acesse o repositório público e conheça a implementação do projeto.',
-    href: 'https://github.com/JeffersonSantosKn/Riseup---Projeto-Front',
+    href: 'https://github.com/auhauhbr/Trilum-Conecta',
     disponivel: true,
     Icone: Code2,
   },

@@ -5,7 +5,7 @@
 A apresentação possui uma página pública com acesso ao projeto, contas de demonstração e
 materiais:
 
-* **Produção:** [https://jeffersonsantoskn.github.io/Trilum-Conecta/#/coday](https://jeffersonsantoskn.github.io/Trilum-Conecta/#/coday)
+* **Produção:** [https://auhauhbr.github.io/Trilum-Conecta/#/coday](https://auhauhbr.github.io/Trilum-Conecta/#/coday)
 * **Local:** `http://localhost:5173/Trilum-Conecta/#/coday`
 
 Para QR Codes, use sempre a URL completa com `#/coday`.
@@ -18,7 +18,7 @@ As regras do sistema são a fonte de verdade. Pontuações, recomendações, rad
 
 Versão publicada no GitHub Pages:
 
-[https://jeffersonsantoskn.github.io/Trilum-Conecta/#/](https://jeffersonsantoskn.github.io/Trilum-Conecta/#/)
+[https://auhauhbr.github.io/Trilum-Conecta/#/](https://auhauhbr.github.io/Trilum-Conecta/#/)
 
 > **Nota:** Use o link com `#/`, pois o projeto usa `HashRouter` para funcionar corretamente no GitHub Pages.
 

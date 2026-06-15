@@ -64,12 +64,12 @@ O `gemma3:1b` é indicado para uma demonstração leve. Em computadores com mais
 
 O deploy publicado sempre funciona com regras e fallbacks, mesmo sem Ollama. O workflow do GitHub Pages gera a versão pública com `VITE_IA_LOCAL_HABILITADA=true`, permitindo que o navegador tente usar o Ollama instalado no computador de quem acessa.
 
-Cada visitante que quiser receber textos gerados pelo modelo precisa ter o Ollama instalado, o `gemma3:1b` baixado e o serviço local executando. Como a chamada parte do navegador aberto no domínio público, também pode ser necessário autorizar `https://jeffersonsantoskn.github.io` na configuração local do Ollama. Sem isso, a central usa fallback automaticamente e nenhuma tela quebra.
+Cada visitante que quiser receber textos gerados pelo modelo precisa ter o Ollama instalado, o `gemma3:1b` baixado e o serviço local executando. Como a chamada parte do navegador aberto no domínio público, também pode ser necessário autorizar `https://auhauhbr.github.io` na configuração local do Ollama. Sem isso, a central usa fallback automaticamente e nenhuma tela quebra.
 
 Exemplo para testar o deploy no PowerShell, após fechar outra instância do Ollama:
 
 ```powershell
-$env:OLLAMA_ORIGINS='https://jeffersonsantoskn.github.io'
+$env:OLLAMA_ORIGINS='https://auhauhbr.github.io'
 ollama serve
 ```
 
